@@ -1353,6 +1353,14 @@ a.set-row{text-decoration:none;color:inherit}
 .ifoot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;padding-top:10px}
 .ivf .fl{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500}
 .ivf .fl .field{color:var(--text)}
+.ivf .field{box-sizing:border-box;height:46px;min-height:46px;width:100%;padding:0 12px;border-radius:11px;font-size:16px;line-height:44px}
+.ivf select.field{-webkit-appearance:none;appearance:none;padding-right:34px;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%238b8580' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 13px center}
+.ivf #pcA{font-size:18px!important;font-weight:600!important}
+.ivf .ivcur{position:relative;display:block}
+.ivf .ivcur .field{padding-right:34px}
+.ivf .ivcur>span{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none}
 .ivf .ivg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .ivf .ivrow{display:flex;align-items:center;gap:8px}
 .ivf .ivrow .field{flex:1;min-width:0}
@@ -2763,7 +2771,7 @@ function pacSheet(p0) {
     <div class="sh-h"><button type="button" class="more" data-x aria-label="Chiudi">${ico('x', 22)}</button><b style="flex:1;font-size:17px;text-align:center">${isNew ? 'Nuovo piano di accumulo' : 'Piano di accumulo'}</b><button class="primary" type="submit" style="margin-right:8px">${isNew ? 'Crea' : 'Salva'}</button></div>
     <div class="sh-b apf ivf">
       <label class="fl">Titolo<select class="field" id="pcI">${I.items.map(x => `<option value="${x.id}" ${x.id === p.item ? 'selected' : ''}>${esc(x.name || x.symbol || 'Senza nome')}${x.symbol ? ' · ' + esc(x.symbol) : ''}</option>`).join('')}<option value="__new">+ Un altro titolo…</option></select></label>
-      <div class="ivg"><label class="fl">Importo<span class="ivrow"><input class="field" id="pcA" inputmode="decimal" value="${numIn(p.amount)}" required style="font-size:20px;font-weight:600"><span class="muted">€</span></span></label>
+      <div class="ivg"><label class="fl">Importo<span class="ivcur"><input class="field" id="pcA" inputmode="decimal" value="${numIn(p.amount)}" required><span class="muted" aria-hidden="true">€</span></span></label>
         <label class="fl">Ogni<select class="field" id="pcE">${PAC_EVERY.map(([v, l]) => `<option value="${v}" ${v === +p.every ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
       <div class="ivg"><label class="fl">Giorno del mese<input class="field" id="pcD" type="number" min="1" max="31" inputmode="numeric" value="${+p.day || 1}"></label>
         <label class="fl">A partire da<input class="field" id="pcS" type="date" value="${esc(p.start)}"></label></div>
