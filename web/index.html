@@ -63,13 +63,15 @@ html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-r
 input,select,button,textarea{font-family:inherit}
 .title,.card .val,.brand{font-family:var(--sf-display);letter-spacing:-.022em}
 .card .val{letter-spacing:-.015em}
-body{margin:0;font:14px/1.5 var(--sf-text);letter-spacing:-.006em;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden}
+body{margin:0;font:14px/1.5 var(--sf-text);letter-spacing:-.006em;background:var(--bg);color:var(--text);display:flex;height:100vh;height:100dvh;overflow:hidden}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;border-radius:5px;padding:4px 8px}
 button:hover:not(:disabled){background:var(--hover)}
 button:disabled{opacity:.35;cursor:default}
-aside{width:240px;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:12px 8px;flex-shrink:0}
+aside{width:240px;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:12px 8px;flex-shrink:0;box-sizing:border-box;height:100vh;height:100dvh;min-height:0;overflow:hidden}
+/* Safari: la lista delle sezioni scorre, il fondo (Cestino, Impostazioni, profilo) resta sempre visibile */
+aside>.brand,aside>.side-foot{flex-shrink:0}
 .brand{font-weight:600;padding:2px 8px 6px}
-.nav{flex:1;overflow:auto}
+.nav{flex:1 1 0;min-height:0;overflow:auto;overscroll-behavior:contain}
 .nav-sec{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:14px 8px 4px;display:flex;justify-content:space-between;align-items:center}
 .nav-sec button{padding:0 6px;font-size:15px;color:var(--muted)}
 .nav-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:5px;cursor:pointer}
