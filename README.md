@@ -591,6 +591,7 @@ Cosa viene creato: una VM **e2-small** (2 GB) a **Milano** (`europe-west8`) con 
 | `./deploy.sh logs` / `status` | log in tempo reale / stato |
 | `./deploy.sh backup` | backup subito |
 | `./deploy.sh stop` / `start` | spegne la VM (con backup prima) / la riaccende: da spenta paghi solo disco e IP |
+| `./deploy.sh reset` | **cancella tutto** (dati, backup, snapshot) e ricrea la VM da zero; chiede di scrivere «CANCELLA TUTTO» |
 
 **Accesso da remoto**: l'app si usa dal browser o dal telefono su `https://tuodominio` (meglio con la verifica in due passaggi attiva nel profilo). La VM invece si gestisce solo da Cloud Shell o dalla console, dopo il login Google. Per far entrare un'altra persona in SSH aggiungi la sua email in `admin_members` in `terraform.tfvars` e rilancia `./deploy.sh up`.
 

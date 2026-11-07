@@ -11,6 +11,7 @@
 #   ./deploy.sh backup    backup subito (oltre a quello notturno)
 #   ./deploy.sh stop      spegne la VM (backup prima): non paghi CPU e RAM, solo disco e IP (pochi euro al mese)
 #   ./deploy.sh start     riaccende la VM; l'app riparte da sola
+#   ./deploy.sh reset     CANCELLA TUTTO: dati, backup e snapshot; ricrea la VM da zero (IP e dominio restano)
 set -euo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
 DEPLOY=$(cd "$HERE/.." && pwd)
@@ -321,8 +322,57 @@ cmd_start() {
   remote "cd /opt/tracker && sudo docker compose up -d && sudo docker compose ps"
 }
 
+# Ripartire da zero: niente dati vecchi da nessuna parte (VM, backup nel bucket, snapshot del disco).
+# L'IP statico, la rete e il bucket restano: il dominio continua a puntare qui.
+cmd_reset() {
+  need gcloud; ensure_terraform; target
+  terraform -chdir="$HERE" init -input=false >/dev/null
+  local BUCKET; BUCKET=$(tfout backup_bucket || true)
+  echo
+  echo "ATTENZIONE: questo comando cancella in modo definitivo"
+  echo "  • la VM «$VM» e il suo disco: utenti, spese, appuntamenti, diario, impostazioni di Tacuìn"
+  echo "  • tutti i backup nel bucket ${BUCKET:-(non trovato)}"
+  echo "  • tutti gli snapshot del disco"
+  echo "Poi ricrea la VM da zero e avvia Tacuìn vuoto. Restano l'IP statico, la rete e il bucket (vuoto)."
+  echo "Non si torna indietro."
+  local ok again
+  read -rp "Per continuare scrivi CANCELLA TUTTO: " ok
+  [ "$ok" = "CANCELLA TUTTO" ] || die "annullato: non ho toccato niente"
+  read -rp "Rifaccio anche la configurazione (nome e password del root, email…)? [s/N] " again
+
+  say "1/4 Tolgo la protezione dalla cancellazione della VM"
+  terraform -chdir="$HERE" apply -input=false -auto-approve -var deletion_protection=false \
+    -target=google_compute_instance.vm >/dev/null
+
+  say "2/4 Cancello i backup nel bucket"
+  if [ -n "$BUCKET" ]; then
+    gcloud storage rm --recursive --all-versions "gs://$BUCKET/**" --project "$PROJECT" --quiet 2>/dev/null || echo "  (bucket già vuoto)"
+  fi
+
+  say "3/4 Ricreo la VM da zero (disco nuovo e vuoto)"
+  terraform -chdir="$HERE" apply -input=false -auto-approve -var deletion_protection=false \
+    -replace=google_compute_instance.vm -replace=google_compute_disk_resource_policy_attachment.snapshots
+  # gli snapshot del disco vecchio restano finché non li cancello io (regola KEEP_AUTO_SNAPSHOTS)
+  local SNAPS
+  SNAPS=$(gcloud compute snapshots list --project "$PROJECT" --filter="sourceDisk~/disks/$VM\$" --format='value(name)' 2>/dev/null || true)
+  if [ -n "$SNAPS" ]; then
+    echo "  Cancello $(wc -l <<<"$SNAPS") snapshot del disco vecchio"
+    # shellcheck disable=SC2086
+    gcloud compute snapshots delete $SNAPS --project "$PROJECT" --quiet >/dev/null
+  fi
+  if [ "${again,,}" = s ] && [ -f "$SECRETS" ]; then
+    mv "$SECRETS" "$SECRETS.vecchio"; echo "  La configurazione vecchia è in $SECRETS.vecchio"
+  fi
+
+  say "4/4 Preparo la VM nuova e avvio Tacuìn"
+  cmd_up   # rimette anche la protezione dalla cancellazione (deletion_protection del file terraform.tfvars)
+  echo
+  echo "Fatto: Tacuìn è ripartito vuoto. Entra con l'email e la password del root del file di configurazione."
+  echo "Per 7 giorni Google tiene i file cancellati dal bucket in un cestino recuperabile, poi spariscono da soli."
+}
+
 case "${1:-}" in
   up) cmd_up ;; update) cmd_update ;; ssh) cmd_ssh ;; logs) cmd_logs ;; status) cmd_status ;; backup) cmd_backup ;;
-  stop) cmd_stop ;; start) cmd_start ;;
-  *) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+  stop) cmd_stop ;; start) cmd_start ;; reset) cmd_reset ;;
+  *) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac
