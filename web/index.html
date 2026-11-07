@@ -1354,6 +1354,72 @@ a.set-row{text-decoration:none;color:inherit}
 .srv-step{display:flex;gap:12px;align-items:flex-start}
 .srv-step>b{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-size:13px;flex:none;margin-top:2px}
 .srv-rec{display:grid;grid-template-columns:70px minmax(0,1fr);row-gap:6px;font-size:14px}
+
+/* ---- pagina di accesso: colonna unica sul telefono, due metà su schermi larghi ---- */
+.auth{min-height:100vh;min-height:100dvh;padding:0;align-items:stretch;justify-content:stretch}
+.auth-wrap{display:flex;width:100%;min-height:100vh;min-height:100dvh}
+.auth-side{display:none}
+.auth-main{flex:1;display:flex;justify-content:center;padding:calc(24px + env(safe-area-inset-top)) 24px calc(18px + env(safe-area-inset-bottom));box-sizing:border-box}
+.auth-box{max-width:400px;width:100%;gap:0;min-height:100%}
+.auth-head{display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:20px}
+.auth-head>span{font-size:15px}
+.auth-card{background:transparent;border:0;border-radius:0;padding:0;box-shadow:none;gap:18px}
+.auth-card label.f,.auth-card div.f{font-size:13px;gap:3px}
+.auth-card .field{border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;padding:0 2px!important;min-height:48px;font-size:17px!important;box-shadow:none!important}
+.auth-card .field:focus{border-bottom-color:var(--accent)!important;outline:0}
+.auth-card .primary{min-height:52px;border-radius:14px;font-size:17px}
+.auth-tabs{display:flex;justify-content:center;gap:26px;background:transparent;padding:0;border-radius:0;border-bottom:1px solid var(--line);margin:0 0 6px}
+.auth-tabs button{border-radius:0!important;padding:8px 0!important;font-size:16px;color:var(--muted);border-bottom:2px solid transparent!important;margin-bottom:-1px;background:transparent!important;box-shadow:none!important}
+.auth-tabs button.on{color:var(--text);font-weight:600;border-bottom-color:var(--accent)!important}
+.auth .chk{font-size:15px;align-items:flex-start;gap:12px;line-height:1.45}
+.auth .chk input{width:20px;height:20px;flex:none;margin:1px 0 0;accent-color:var(--accent)}
+.pw{display:flex;align-items:center;border-bottom:1px solid var(--line)}
+.pw:focus-within{border-bottom-color:var(--accent)}
+.pw .field{flex:1;min-width:0;border-bottom:0!important}
+.pw-eye{border:0!important;background:transparent!important;color:var(--muted);font-size:14px;font-weight:500;padding:0 4px!important;min-height:44px}
+.auth-forgot{align-self:center;font-size:14.5px;font-weight:500}
+.auth-steps{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.auth-steps i{flex:1;height:3px;border-radius:2px;background:var(--line)}
+.auth-steps i.on{background:var(--accent)}
+.auth-steps span{margin-left:6px}
+.auth-step{display:flex;flex-direction:column;gap:18px}
+.auth-step[hidden]{display:none}
+.auth-line{height:1px;background:var(--line);margin:0 12px}
+.srcs{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.src input{position:absolute;opacity:0;pointer-events:none}
+.src span{display:inline-flex;align-items:center;min-height:38px;padding:0 14px;border-radius:99px;border:1px solid var(--line);color:var(--muted);font-size:14.5px;font-weight:500;cursor:pointer}
+.src input:checked+span{background:var(--text);border-color:var(--text);color:var(--bg)}
+.src input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.consents{display:flex;flex-direction:column;gap:14px}
+.auth-back{align-self:center;color:var(--muted)!important;font-size:15px}
+.auth-small{margin:0;text-align:center;font-size:13.5px;line-height:1.5}
+.auth-bottom{margin-top:auto;padding-top:22px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.auth-bottom::before{content:"";align-self:stretch;height:1px;background:var(--line);margin:0 12px 10px}
+.auth-admin{font-size:14px;font-weight:600}
+.auth-legal{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 0;font-size:12.5px;color:var(--muted);line-height:1.7}
+.auth-legal>*:not(:last-child)::after{content:"·";margin:0 7px;color:var(--muted)}
+.auth-legal a,.auth-legal .linkbtn{color:var(--accent-t);text-decoration:none;font-size:12.5px;font-weight:400}
+@media (min-width:600px) and (max-width:959px){
+  .auth-main{align-items:center}
+  .auth-box{min-height:0}
+  .auth-bottom{margin-top:36px}
+}
+.auth-legal .linkbtn{padding:0!important}
+@media (min-width:960px){
+  .auth-side{display:flex;flex-direction:column;gap:28px;flex:1 1 50%;padding:64px 72px;background:color-mix(in srgb,var(--topo) 12%,var(--bg))}
+  .auth-side .auth-brand{justify-content:flex-start}
+  .auth-side .tmark{width:48px;height:48px}
+  .auth-side .tword{font-size:42px!important}
+  .auth-side h1{margin:40px 0 0;font-size:46px;font-weight:700;letter-spacing:-.03em;line-height:1.08}
+  .auth-side ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:14px;font-size:17px;color:var(--muted)}
+  .auth-side li::before{content:"→ "}
+  .auth-side .auth-legal{margin-top:auto;justify-content:flex-start}
+  .auth-main{flex:1 1 50%;align-items:center;padding:48px}
+  .auth-box{min-height:0}
+  .auth-head{display:none}
+  .auth-bottom{padding-top:22px}
+  .auth-bottom::before,.auth-bottom .auth-legal{display:none}
+}
 </style>
 </head>
 <body>
@@ -5376,13 +5442,24 @@ function renderReceipt() {
 function authShell(inner) {
   document.body.classList.add('authing');
   const a = $('#auth'); a.hidden = false;
-  a.innerHTML = `<div class="auth-box"><div class="auth-head"><b class="auth-brand"><svg class="tmark" viewBox="0 0 48 48" aria-hidden="true"><rect x="15" y="7" width="22" height="29" rx="4" fill="none" stroke="currentColor" stroke-width="2.4" opacity=".35"/><rect x="10" y="12" width="22" height="29" rx="4" fill="var(--bg)" stroke="currentColor" stroke-width="2.4"/><path d="M15.5 21h11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="16.5" cy="30" r="2.6" fill="var(--logo)"/></svg><span class="tword">tacu<span>ì</span>n</span></b><span>Il tuo secondo cervello: giornate, spese, abitudini e progetti</span></div>${inner}<div class="auth-contact"><button type="button" class="linkbtn" data-contact>${ico('mail', 16)}Scrivi all'amministratore</button></div>${betaFoot(true)}</div>`;
+  const mark = `<svg class="tmark" viewBox="0 0 48 48" aria-hidden="true"><rect x="15" y="7" width="22" height="29" rx="4" fill="none" stroke="currentColor" stroke-width="2.4" opacity=".35"/><rect x="10" y="12" width="22" height="29" rx="4" fill="var(--bg)" stroke="currentColor" stroke-width="2.4"/><path d="M15.5 21h11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="16.5" cy="30" r="2.6" fill="var(--logo)"/></svg>`;
+  const legal = `<span>Versione di prova</span><button type="button" class="linkbtn" data-beta>Leggi la nota</button><a href="/privacy" target="_blank" rel="noopener">Privacy</a><a href="/condizioni" target="_blank" rel="noopener">Condizioni</a><a href="${esc(SOURCE_URL)}" target="_blank" rel="noopener">Codice sorgente</a>`;
+  a.innerHTML = `<div class="auth-wrap">
+    <div class="auth-side"><b class="auth-brand">${mark}<span class="tword">tacu<span>ì</span>n</span></b>
+      <h1>La tua giornata<br>in un solo taccuino.</h1>
+      <ul><li>Spese, anche da dividere con gli amici</li><li>Appuntamenti con promemoria e inviti</li><li>Abitudini, diario, viaggi e progetti</li></ul>
+      <div class="auth-legal">${legal}</div></div>
+    <div class="auth-main"><div class="auth-box">
+      <div class="auth-head"><b class="auth-brand">${mark}<span class="tword">tacu<span>ì</span>n</span></b><span>Il tuo taccuino per la giornata</span></div>
+      ${inner}
+      <div class="auth-bottom"><button type="button" class="linkbtn auth-admin" data-contact>Scrivi all'amministratore</button><div class="auth-legal">${legal}</div></div>
+    </div></div></div>`;
   return a;
 }
 function bindForm(form, fn) {
   form.addEventListener('submit', async e => {
     e.preventDefault();
-    const err = form.querySelector('.auth-err'), btn = form.querySelector('button[type=submit]');
+    const err = [...form.querySelectorAll('.auth-err')].find(x => !x.closest('[hidden]')) || form.querySelector('.auth-err'), btn = form.querySelector('button[type=submit]');
     err.textContent = ''; btn.disabled = true;
     try { await fn(Object.fromEntries(new FormData(form))); }
     catch (x) { err.textContent = x.message; }
@@ -5424,28 +5501,62 @@ function renderAuth(info, mode) {
     });
     return;
   }
-  const tabs = `<div class="auth-tabs"><button type="button" data-m="login" class="${mode === 'login' ? 'on' : ''}">Accedi</button><button type="button" data-m="register" class="${mode === 'register' ? 'on' : ''}">Richiedi accesso</button></div>`;
+  const tabs = `<div class="auth-tabs" role="tablist"><button type="button" role="tab" aria-selected="${mode === 'login'}" data-m="login" class="${mode === 'login' ? 'on' : ''}">Accedi</button><button type="button" role="tab" aria-selected="${mode === 'register'}" data-m="register" class="${mode === 'register' ? 'on' : ''}">Richiedi accesso</button></div>`;
+  const pw = (name, ac, extra = '') => `<span class="pw"><input class="field" name="${name}" type="password" required ${extra} autocomplete="${ac}"><button type="button" class="pw-eye" data-eye aria-label="Mostra la password">Mostra</button></span>`;
+  const fromIg = /[?&]da=instagram\b/.test(location.search);
+  const src = (v, l) => `<label class="src"><input type="radio" name="source" value="${v}" ${fromIg && v === 'instagram' ? 'checked' : ''}><span>${l}</span></label>`;
   const a = authShell(mode === 'login' ? `<form class="auth-card" autocomplete="on">${tabs}
-      <label class="f">Email<input class="field" name="email" type="email" required autocomplete="username"></label>
-      <label class="f">Password<input class="field" name="password" type="password" required autocomplete="current-password"></label>
+      <label class="f">Email<input class="field" name="email" type="email" required autocomplete="username" inputmode="email" autocapitalize="none"></label>
+      <label class="f">Password${pw('password', 'current-password')}</label>
       <label class="chk"><input type="checkbox" name="remember" checked>Resta collegato su questo dispositivo</label>
-      <p class="auth-err"></p>
+      <p class="auth-err" role="alert"></p>
       <button class="primary" type="submit">Accedi</button>
-      <p style="margin:0;font-size:14px;color:var(--muted)">Password dimenticata? <button type="button" class="linkbtn" data-contact>Chiedi all'amministratore</button> un link per reimpostarla.</p></form>`
-    : `<form class="auth-card" autocomplete="on">${tabs}
-      <label class="f">Nome<input class="field" name="name" required autocomplete="name"></label>
-      <label class="f">Nome utente<span class="hdl"><span aria-hidden="true">@</span><input class="field" name="handle" required minlength="3" maxlength="24" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="es. mario.rossi"><b class="hdl-st" aria-live="polite"></b></span><small class="muted">Da 3 a 24 caratteri: lettere minuscole, numeri, punto e trattino basso. Gli altri utenti lo usano per trovarti; la tua email resta nascosta.</small></label>
-      <label class="f">Email<input class="field" name="email" type="email" required autocomplete="email"></label>
-      <label class="f">Password (almeno 8 caratteri, lettere e numeri)<input class="field" name="password" type="password" required minlength="8" autocomplete="new-password"></label>
-      <label class="f">Come ci hai conosciuto? <span class="muted">(facoltativo)</span><select class="field" name="source"><option value="">Scegli…</option><option value="instagram" ${/[?&]da=instagram\b/.test(location.search) ? 'selected' : ''}>Instagram</option><option value="amici">Amici o passaparola</option><option value="ricerca">Ricerca su internet</option><option value="altro">Altro</option></select></label>
-      <div class="consents">
-        <label class="chk"><input type="checkbox" name="accept_privacy" required><span>Ho letto l'<a href="/privacy" target="_blank" rel="noopener">informativa sulla privacy</a> e ho almeno 18 anni</span></label>
-        <label class="chk"><input type="checkbox" name="accept_terms" required><span>Accetto le <a href="/condizioni" target="_blank" rel="noopener">condizioni d'uso della versione di prova</a></span></label>
-        <label class="chk"><input type="checkbox" name="accept_clauses" required><span>Approvo specificamente, ai sensi degli artt. 1341 e 1342 c.c., i punti 2, 3, 4 e 7 delle condizioni (natura sperimentale, esclusione di garanzie, limitazione di responsabilità, sospensione)</span></label>
+      <button type="button" class="linkbtn auth-forgot" data-contact>Password dimenticata?</button></form>`
+    : `<form class="auth-card" autocomplete="on" novalidate>${tabs}
+      <div class="auth-steps" aria-hidden="true"><i class="on"></i><i data-bar2></i><span data-stepn>Passo 1 di 2</span></div>
+      <div class="auth-step" data-step="1">
+        <label class="f">Nome<input class="field" name="name" required autocomplete="name"></label>
+        <label class="f">Nome utente<span class="hdl"><span aria-hidden="true">@</span><input class="field" name="handle" required minlength="3" maxlength="24" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="es. mario.rossi"><b class="hdl-st" aria-live="polite"></b></span><small class="muted">Serve agli altri per trovarti. La tua email resta nascosta.</small></label>
+        <label class="f">Email<input class="field" name="email" type="email" required autocomplete="email" inputmode="email" autocapitalize="none"></label>
+        <label class="f">Password${pw('password', 'new-password', 'minlength="8"')}<small class="muted">Almeno 8 caratteri, con lettere e numeri.</small></label>
+        <p class="auth-err" role="alert"></p>
+        <button class="primary" type="button" data-next>Continua</button>
       </div>
-      <p class="auth-err"></p>
-      <button class="primary" type="submit">Invia richiesta</button></form>
-      <div class="auth-note">La richiesta arriva all'amministratore. Potrai accedere quando avrà approvato il tuo account.</div>`);
+      <div class="auth-step" data-step="2" hidden>
+        <div class="f">Come ci hai conosciuto? <span class="muted">(facoltativo)</span><div class="srcs">${src('instagram', 'Instagram')}${src('amici', 'Amici')}${src('ricerca', 'Ricerca su internet')}${src('altro', 'Altro')}</div></div>
+        <div class="auth-line"></div>
+        <div class="consents">
+          <label class="chk"><input type="checkbox" name="accept_privacy"><span>Ho letto l'<a href="/privacy" target="_blank" rel="noopener">informativa privacy</a> e ho almeno 18 anni</span></label>
+          <label class="chk"><input type="checkbox" name="accept_terms"><span>Accetto le <a href="/condizioni" target="_blank" rel="noopener">condizioni d'uso</a> della versione di prova</span></label>
+          <label class="chk"><input type="checkbox" name="accept_clauses"><span>Approvo specificamente le clausole 2, 3, 4 e 7 delle condizioni (artt. 1341 e 1342 c.c.) <button type="button" class="linkbtn" data-clauses>quali sono?</button><small class="muted" data-clauses-t hidden> Natura sperimentale del servizio, esclusione di garanzie, limitazione di responsabilità, sospensione o interruzione del servizio.</small></span></label>
+        </div>
+        <p class="auth-err" role="alert"></p>
+        <button class="primary" type="submit">Invia richiesta</button>
+        <button type="button" class="linkbtn auth-back" data-back>← Indietro</button>
+        <p class="muted auth-small">Riceverai un'email per confermare l'indirizzo. Potrai entrare quando l'amministratore approva la richiesta.</p>
+      </div></form>`);
+  a.addEventListener('click', e => {
+    const eye = e.target.closest('[data-eye]');
+    if (eye) { const i = eye.previousElementSibling, show = i.type === 'password'; i.type = show ? 'text' : 'password'; eye.textContent = show ? 'Nascondi' : 'Mostra'; eye.setAttribute('aria-label', show ? 'Nascondi la password' : 'Mostra la password'); return; }
+    if (e.target.closest('[data-clauses]')) { e.preventDefault(); const t = a.querySelector('[data-clauses-t]'); t.hidden = !t.hidden; return; }
+    const go = n => {
+      a.querySelectorAll('.auth-step').forEach(st => st.hidden = st.dataset.step !== String(n));
+      a.querySelector('[data-bar2]').classList.toggle('on', n === 2); a.querySelector('[data-stepn]').textContent = `Passo ${n} di 2`;
+      a.querySelector(`.auth-step[data-step="${n}"] input`)?.focus();
+    };
+    if (e.target.closest('[data-next]')) {
+      const st = a.querySelector('.auth-step[data-step="1"]'), err = st.querySelector('.auth-err');
+      const bad = [...st.querySelectorAll('input[required]')].find(i => !i.checkValidity());
+      if (bad) { err.textContent = bad.name === 'password' ? 'La password deve avere almeno 8 caratteri.' : bad.name === 'handle' ? 'Scegli un nome utente di almeno 3 caratteri.' : bad.type === 'email' ? 'Scrivi un indirizzo email valido.' : 'Completa tutti i campi.'; bad.focus(); return; }
+      if (a.querySelector('.hdl-st.no')) { err.textContent = 'Questo nome utente non si può usare: scegline un altro.'; return; }
+      err.textContent = ''; go(2); return;
+    }
+    if (e.target.closest('[data-back]')) go(1);
+  });
+  a.querySelector('form')?.addEventListener('submit', e => {  // Invio al passo 1 = Continua
+    const st2 = a.querySelector('.auth-step[data-step="2"]');
+    if (st2 && st2.hidden) { e.preventDefault(); e.stopImmediatePropagation(); a.querySelector('[data-next]').click(); }
+  });
   a.querySelectorAll('[data-m]').forEach(b => b.onclick = () => renderAuth(info, b.dataset.m));
   const hIn = a.querySelector('input[name="handle"]'); if (hIn) handleCheck(hIn, a.querySelector('.hdl-st'));
   bindForm(a.querySelector('form'), async d => {
@@ -5456,6 +5567,7 @@ function renderAuth(info, mode) {
       location.reload();
     }
     else {
+      if (!(d.accept_privacy && d.accept_terms && d.accept_clauses)) throw new Error('Servono tutte e tre le conferme.');
       const j = await api('api/register', {...d, accept_privacy: !!d.accept_privacy, accept_terms: !!d.accept_terms, accept_clauses: !!d.accept_clauses});
       a.querySelector('form').innerHTML = `<p class="auth-ok">${esc(j.message)}</p><button class="ghost" type="button" id="backLogin">Torna all'accesso</button>`;
       $('#backLogin').onclick = () => renderAuth(info, 'login');
