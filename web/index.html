@@ -2962,7 +2962,8 @@ function nutEntry(food, q, unit, slot) {
   if (g != null && food.k != null) { e.g = Math.round(g); e.kcal = Math.round(food.k * g / 100); ['p', 'c', 'f'].forEach(x => { if (food[x] != null) e[x] = r1(food[x] * g / 100); }); }
   return e;
 }
-const qtyLabel = e => !e.u ? (e.q && e.q !== 1 ? fmt(e.q) : '') : e.u === 'g' || e.u === 'ml' ? `${fmt(e.q)} ${e.u}` : `${fmt(e.q) === '1' ? '1' : fmt(e.q)} ${e.u}`;
+const plurIt = u => u.split(' ').map(w => ({uovo: 'uova', paio: 'paia'})[w] || (/io$/.test(w) ? w.slice(0, -1) : /[cg]a$/.test(w) ? w.slice(0, -1) + 'he' : /a$/.test(w) ? w.slice(0, -1) + 'e' : /[oe]$/.test(w) ? w.slice(0, -1) + 'i' : w)).join(' ');
+const qtyLabel = e => !e.u ? (e.q && e.q !== 1 ? fmt(e.q) : '') : e.u === 'g' || e.u === 'ml' ? `${fmt(e.q)} ${e.u}` : `${fmt(e.q)} ${e.q > 1 ? plurIt(e.u) : e.u}`;
 const sumK = list => { const t = {kcal: 0, p: 0, c: 0, f: 0, any: false}; list.forEach(e => { if (e.kcal != null) { t.any = true; t.kcal += e.kcal; t.p += e.p || 0; t.c += e.c || 0; t.f += e.f || 0; } }); return t; };
 /* pasti salvati «da soli»: compaiono nel giorno come da confermare, una volta sola */
 function nutAuto(k) {

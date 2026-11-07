@@ -309,6 +309,7 @@ from iam import DB, IAM, Store, CURRENT_USER, ROLE_LABEL, TotpNeeded, check_pass
 import brain  # noqa: E402
 import food as food_mod  # noqa: E402
 import invest  # noqa: E402
+import nutri  # noqa: E402
 import quotes as quotes_mod  # noqa: E402
 import notify  # noqa: E402
 import travel  # noqa: E402
@@ -1987,7 +1988,8 @@ HELP = (
     "     <b>marco ha pagato 40 benzina</b> · <b>conti</b> — chi deve a chi\n"
     "     <b>saldato marco</b> — registra che avete pareggiato\n\n"
     "📝 <b>da fare: pagare il bollo, chiamare Marco</b> · <b>da fare domani: …</b> · <b>da fare</b> per vederle\n"
-    "📖 <b>diario: oggi è stata una bella giornata</b> — scrive nel diario di oggi\n\n"
+    "📖 <b>diario: oggi è stata una bella giornata</b> — scrive nel diario di oggi\n"
+    "🍽 <b>1 banana a colazione</b> · <b>350 g di pasta al ragù a cena</b> · <b>2 bicchieri d'acqua</b> — diario alimentare\n\n"
     "📅 <b>dentista venerdì alle 15:30</b> — nuovo appuntamento (anche <b>calcetto ogni giovedì alle 19</b>)\n"
     "     <b>cosa ho domani</b> · <b>agenda</b> · <b>cosa è successo ieri</b> · <b>cancella appuntamento dentista</b>\n\n"
     "✈️ <b>viaggi</b> — i prossimi viaggi · <b>meteo lisbona</b> — previsioni\n"
@@ -2312,6 +2314,16 @@ def undo(chat):
             n = before - len(st["expenses"]["items"])
             if n:
                 return f"↩️ Annullate {n} spese."
+        if kind == "food":
+            _d, ids, water = op[1], set(op[2]), op[3]
+            day = ((st.get("nutrition") or {}).get("days") or {}).get(_d) or {}
+            before = len(day.get("e") or [])
+            day["e"] = [x for x in day.get("e") or [] if x.get("id") not in ids]
+            if water:
+                nutri.water_add(st, _d, -water)
+            nutri.habit_sync(st, _d)
+            if before != len(day.get("e") or []) or water:
+                return "↩️ Tolto dal diario alimentare."
         if kind == "expense":
             items = st["expenses"]["items"]
             it = next((x for x in items if x["id"] == op[1]), None)
@@ -3256,6 +3268,61 @@ COMMAND_WORDS = ["meteo", "viaggi", "aiuto", "oggi", "mese", "annulla", "abitudi
                  "conti", "saldato", "tracker", "analisi", "riepilogo", "debiti"]
 
 
+# ---------------------------------------------------------------- alimentazione
+_FOODS = []
+
+
+def foods_table():
+    global _FOODS
+    if not _FOODS:
+        _FOODS = nutri.load_foods(WEB_DIR / "foods.js")
+    return _FOODS
+
+
+def food_add(text, chat):
+    """«1 banana a colazione», «350 g di pasta al ragù a cena», «2 bicchieri d'acqua» → diario alimentare."""
+    now = datetime.now()
+
+    def fn(st):
+        N = st.get("nutrition")
+        if not isinstance(N, dict):
+            N = st["nutrition"] = {}
+        nutri.slots(N)
+        if not isinstance(N.get("days"), dict):
+            N["days"] = {}
+        day, slot, items, water = nutri.parse(text, foods_table(), N, now)
+        if not items and not water:
+            return None
+        d = N["days"].setdefault(day, {})
+        if not isinstance(d.get("e"), list):
+            d["e"] = []
+        d["e"].extend(items)
+        wv = nutri.water_add(st, day, water) if water else None
+        nutri.habit_sync(st, day)
+        diet = [(h.get("name"), bool((h.get("done") or {}).get(day))) for h in st.get("habits", {}).get("list", []) if h.get("kind") == "diet"]
+        return day, slot, items, water, wv, bool(N.get("show")), diet
+    r = store.mutate(fn)
+    if not r:
+        return None
+    day, slot, items, water, wv, show, diet = r
+    push_undo(chat, ("food", day, [e["id"] for e in items], water))
+    when = "" if day == iso(today()) else f" di {day_name(date.fromisoformat(day))}"
+    lines = []
+    if items:
+        lines.append(f"<b>{esc(slot['name'])}</b>{when}:")
+        for e in items:
+            q = nutri.qty_label(e)
+            extra = f" · {e['kcal']} kcal" if show and e.get("kcal") is not None else ""
+            lines.append(f"• {esc(e['name'])}{(' ' + esc(q)) if q else ''}{extra}" + (" <i>(solo il nome: non lo trovo nella tabella)</i>" if e.get("src") == "free" else ""))
+    if water:
+        lines.append(f"Acqua{when}: <b>{wv[0]}</b> su {wv[1]} bicchieri")
+    for name, ok in diet:
+        if items:
+            lines.append(f"<i>{esc(name)}: {'riuscito' if ok else 'non oggi'}</i>")
+    lines.append("<i>Sbagliato? Scrivi «annulla».</i>")
+    return "\n".join(lines)
+
+
 def process(text, chat, _retry=False):
     t = text.strip()
     if not t:
@@ -3287,6 +3354,10 @@ def process(text, chat, _retry=False):
         return journal_add(m.group(1), chat)
     if re.fullmatch(r"/?diario", norm(t)):
         return journal_show()
+    if not brain.is_question(t) and nutri.looks_like_food(t):
+        r = food_add(t, chat)
+        if r:
+            return r
     if not brain.is_question(t) and agenda.looks_like_appointment(t):
         r = appointment_add(t, chat)
         if r:

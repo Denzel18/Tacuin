@@ -38,16 +38,18 @@ Gallette di riso|380|8|80|3||galletta:8
 Piadina|330|8|50|10||piadina:110
 Focaccia|300|7|44|11||pezzo:100
 Pizza margherita|255|11|30|9||pizza:330,trancio:120
-Pasta di semola|353|12|72|1.4||porzione:80
-Pasta integrale|340|13|66|2.5||porzione:80
-Pasta all'uovo|366|13|69|4||porzione:80
+Pasta di semola (cruda)|353|12|72|1.4||porzione:80
+Pasta integrale (cruda)|340|13|66|2.5||porzione:80
+Pasta all'uovo (cruda)|366|13|69|4||porzione:80
 Gnocchi di patate|133|3|29|0.5||porzione:200
-Riso bianco|350|7|80|0.6||porzione:80
-Riso integrale|350|7.5|77|2||porzione:80
-Farro|335|15|67|2.5||porzione:80
-Orzo perlato|319|9|70|1.4||porzione:80
-Quinoa|368|14|64|6||porzione:70
-Cous cous|360|12|73|1.5||porzione:80
+Riso bianco (crudo)|350|7|80|0.6||porzione:80
+Riso bianco (cotto)|130|2.7|28|0.3||porzione:200
+Pasta (cotta)|158|5.8|31|0.9||piatto:200
+Riso integrale (crudo)|350|7.5|77|2||porzione:80
+Farro (crudo)|335|15|67|2.5||porzione:80
+Orzo perlato (crudo)|319|9|70|1.4||porzione:80
+Quinoa (cruda)|368|14|64|6||porzione:70
+Cous cous (crudo)|360|12|73|1.5||porzione:80
 Polenta (cotta)|70|1.6|15|0.3||porzione:250
 Patate|85|2|18|0.1||patata media:200
 Patate fritte|300|3.5|36|15|fr|porzione:150
@@ -157,6 +159,27 @@ Spritz|125|0|11|0|al zu|bicchiere:200
 Superalcolico|230|0|0|0|al|bicchierino:40
 Barretta proteica|360|30|35|10||barretta:55
 Proteine in polvere|380|75|8|5||misurino:30
+Pasta al ragù|165|7.5|21|5.5||piatto:350
+Pasta alla carbonara|200|8.5|20|9.5||piatto:300
+Pasta al pesto|190|5.5|24|8||piatto:300
+Pasta all'amatriciana|170|6.5|22|6.5||piatto:300
+Pasta e fagioli|110|5|17|2.5||piatto:350
+Pasta al tonno|160|8|22|4.5||piatto:300
+Spaghetti aglio olio e peperoncino|200|5.5|28|7.5||piatto:300
+Tortellini in brodo|90|4|11|3.5||piatto:350
+Risotto ai funghi|140|3.5|22|4.5||piatto:300
+Risotto alla milanese|150|3.5|23|5||piatto:300
+Parmigiana di melanzane|160|7|7|11||porzione:250
+Insalata caprese|180|10|3|14|fv|piatto:250
+Insalata di riso|165|5|25|5||piatto:300
+Polpette al sugo|190|13|8|12||porzione:200
+Arrosto di vitello|160|25|1|6||porzione:150
+Bistecca|170|26|0|7||bistecca:200
+Frittata|190|12|1.5|15||porzione:150
+Zuppa di legumi|90|5|13|2||piatto:350
+Vellutata di verdure|50|1.5|7|2|fv|piatto:300
+Toast prosciutto e formaggio|300|15|28|14||toast:120
+Hamburger con pane|260|13|24|12||panino:220
 Sushi misto|150|6|28|1.5||pezzo:30
 Kebab|215|13|17|10||kebab:300
 Panino al prosciutto|260|13|35|7||panino:150
