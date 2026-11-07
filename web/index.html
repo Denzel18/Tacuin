@@ -118,7 +118,8 @@ main{flex:1;overflow:auto;padding:44px 56px}
 table{border-collapse:collapse;min-width:100%}
 th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:0;text-align:left;vertical-align:middle}
 th:last-child,td:last-child{border-right:0}
-th{font-weight:500;color:var(--muted);font-size:13px;white-space:nowrap}
+th{font-weight:700;color:var(--accent-t);font-size:12px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;border-bottom:2px solid var(--accent)!important;border-right-color:transparent!important}
+th .colbtn,th button{color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit}
 .dt th{padding:6px 8px}
 th.num{text-align:right}
 th .colbtn{width:100%;text-align:left;padding:6px 8px;border-radius:0;min-width:150px}
@@ -136,9 +137,8 @@ td select{appearance:none;-webkit-appearance:none;border:0;color:inherit;font:in
 td select:focus{box-shadow:0 0 0 2px var(--accent)}
 td select.empty{color:var(--muted)}
 td select option{background:var(--card);color:var(--text)}
-td.del button{opacity:0;color:var(--muted);width:100%;border-radius:0}
-tr:hover td.del button{opacity:1}
-td.del button:hover{color:var(--danger)}
+td.del button{color:color-mix(in srgb,var(--text) 68%,transparent);width:34px;height:34px;margin:0 auto;display:grid;place-items:center;border-radius:9px;padding:0}
+td.del button:hover,td.del button:focus-visible{color:var(--danger);background:color-mix(in srgb,var(--danger) 12%,transparent)}
 tbody tr:hover{background:color-mix(in srgb,var(--hover) 45%,transparent)}
 tfoot td{border-bottom:0;padding:6px 8px;color:var(--muted);font-size:12px}
 tfoot b{color:var(--text);font-weight:500}
@@ -605,6 +605,7 @@ a{color:var(--accent)}
 .cchip.trip.ts{margin-left:0;border-radius:5px 0 0 5px}
 .cchip.trip.te{margin-right:0;border-radius:0 5px 5px 0}
 .cchip.trip.ts.te{border-radius:5px}
+.cchip.evspan{background:var(--accent);color:var(--on-accent);font-weight:600}
 .cmore{font-size:11px;color:var(--muted);padding-left:4px}
 .cdots{display:none}
 .cday{gap:6px}
@@ -666,6 +667,7 @@ input.sw:checked::after{transform:translateX(20px)}
   .cc.today .cn{background:none;color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
   .cc.today.sel .cn{background:var(--accent);color:var(--on-accent);box-shadow:none}
   .cc.tripd::before{content:"";position:absolute;top:4px;height:34px;left:0;right:0;background:color-mix(in srgb,#c46a1a 16%,transparent);z-index:0}
+  .cc.evd::before{background:color-mix(in srgb,var(--accent) 18%,transparent)}
   .cc.tripd.ts::before{left:calc(50% - 17px);border-radius:17px 0 0 17px}
   .cc.tripd.te::before{right:calc(50% - 17px);border-radius:0 17px 17px 0}
   .calnav{flex:1;justify-content:space-between}
@@ -1276,6 +1278,14 @@ a.set-row{text-decoration:none;color:inherit}
 .tip .tip-i{color:var(--topo)}
 .chip:has(input:checked){border-color:var(--topo);background:color-mix(in srgb,var(--topo) 12%,transparent)}
 .seg button.on{background:var(--text);color:var(--bg)}
+/* sezioni senza riquadri: titolo, contenuto e una linea sottile sotto, centrata con piccoli margini */
+.pnl{background:transparent!important;border:0!important;border-radius:0!important;padding:6px 2px 18px!important;position:relative}
+.pnl::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:1px;background:var(--line)}
+.pnl[hidden]{display:none!important}
+.pnl h2{font-size:16px}
+.pnl h2 .i{display:none}
+.pnl .crs:first-of-type{border-top:0}
+.cwd.istoday .cdt{font-weight:700}
 @media (max-width:760px){
   .homelogo{display:grid;place-items:center;width:40px;height:44px;border:0;background:transparent;padding:0;margin-left:-6px;flex:none;color:var(--text);border-radius:12px}
   .homelogo .tmark{width:28px;height:28px}
@@ -1284,6 +1294,89 @@ a.set-row{text-decoration:none;color:inherit}
   .head{gap:8px}
   .cardt tr{background:transparent!important;border:0!important;border-radius:0!important;border-bottom:1px solid var(--line)!important;margin:0!important;padding:12px 2px!important}
   .cardt .cell,.cardt td select{background:transparent!important;border-radius:0!important;border-bottom:1px solid var(--line)!important;padding-left:2px!important}
+}
+
+/* ---------- investimenti ---------- */
+.ikpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:14px 0 18px;position:relative;margin-bottom:18px}
+.ikpi::after,.ibox.isec::after,.igrid::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:1px;background:var(--line)}
+.ikpi>div{display:flex;flex-direction:column;gap:2px;padding:2px 18px;border-left:1px solid var(--line);min-width:0}
+.ikpi>div:first-child{border-left:0;padding-left:2px}
+.ikpi span{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ikpi b{font-size:26px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ikpi b em{font-style:normal;font-size:15px;font-weight:500;color:var(--muted)}
+.ikpi small{font-size:13px;color:var(--muted)}
+.ikpi .pos b,.ikpi .pos small{color:var(--pos)}.ikpi .neg b,.ikpi .neg small{color:var(--danger)}
+.igrid{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,1fr);gap:36px;position:relative;padding-bottom:18px;margin-bottom:18px}
+.ibox{min-width:0;position:relative}
+.ibox.isec{padding-bottom:18px;margin-bottom:18px}
+.ibox-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;font-size:13.5px}
+.ibox-h>b{font-size:16px}
+.ileg{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+.ileg i{display:inline-block;width:14px}
+.ileg .lv{height:3px;border-radius:2px;background:var(--accent)}
+.ileg .li{border-top:2px dashed var(--topo)}
+.ileg .le{height:3px;border-radius:2px;background:var(--accent);opacity:.45}
+.iseg{display:inline-flex;gap:2px}
+.iseg button{background:transparent;border:0;border-bottom:2px solid transparent;border-radius:0;padding:4px 9px;color:var(--muted);min-height:32px}
+.iseg button.on{border-bottom-color:var(--accent);color:var(--text);font-weight:600}
+.ichart{position:relative;min-height:170px}
+.ichart svg{display:block;touch-action:pan-y}
+.ichart .ax{font-size:11px;fill:var(--muted);font-family:inherit}
+.itip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px 10px;font-size:12.5px;display:flex;flex-direction:column;gap:1px;box-shadow:0 6px 18px rgba(0,0,0,.08);min-width:140px}
+.itip[hidden]{display:none}
+.ialloc{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding-top:8px}
+.idonut .dv{font-size:4.4px;font-weight:700;fill:var(--text);font-family:inherit}
+.idonut .dl{font-size:2.9px;fill:var(--muted);font-family:inherit}
+.ilegend{display:flex;flex-direction:column;gap:9px;font-size:14px;flex:1;min-width:150px}
+.ilegend span{display:flex;align-items:center;gap:8px}
+.ilegend i{width:10px;height:10px;border-radius:3px;flex:none}
+.ilegend b{margin-left:auto;font-variant-numeric:tabular-nums}
+.iplans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 36px}
+.iplan{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);min-width:0}
+.iplan-b{flex:1;display:flex;align-items:center;gap:14px;padding:12px 0;background:transparent;border:0;border-radius:0;text-align:left;min-width:0;color:inherit}
+.iplan-b .tx{flex:1;display:flex;flex-direction:column;min-width:0}
+.iplan-b small{color:var(--muted);font-size:13px}
+.iplan-b .r{font-variant-numeric:tabular-nums}
+.itype{font-size:11px;font-weight:700;color:var(--accent-t);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);border-radius:6px;padding:2px 6px;flex:none}
+.iplan-pay{min-height:36px;padding:0 12px}
+.itab{width:100%}
+.itab td{border-right:0;padding:10px 8px;font-variant-numeric:tabular-nums}
+.itab tbody tr{cursor:pointer}
+.itab td small{display:block;font-size:12.5px;color:var(--muted);font-weight:400}
+.itab td small.pos{color:var(--pos)}.itab td small.neg{color:var(--danger)}
+.itab td.num{text-align:right;white-space:nowrap}
+.itab td.it b{font-weight:600}
+.itab td.it{max-width:340px}
+.itab td.it small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.itab td.isp{width:80px;padding:4px 6px}
+.itab td.isp svg{display:block}
+.ifoot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;padding-top:10px}
+.ivf .fl{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500}
+.ivf .fl .field{color:var(--text)}
+.ivf .ivg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ivf .ivrow{display:flex;align-items:center;gap:8px}
+.ivf .ivrow .field{flex:1;min-width:0}
+.ivf .ivrow button{flex:none;min-height:44px;padding:0 16px;border:1px solid var(--line);border-radius:11px}
+.ivf .ivisin{display:flex;flex-direction:column;gap:8px}
+.ivf #ivIsin{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;text-transform:uppercase}
+.ivsw{display:flex;gap:12px;align-items:flex-start;font-size:15px;line-height:1.4}
+.ivsw>span{display:flex;flex-direction:column;gap:2px}
+.ivsw small{font-size:13px}
+.ivchart svg{display:block;width:100%}
+.ivch-h{display:flex;gap:10px;align-items:baseline;font-size:13px;margin-bottom:4px;flex-wrap:wrap}
+@media (max-width:760px){
+  .ikpi{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 0}
+  .ikpi>div:nth-child(3){border-left:0;padding-left:2px}
+  .ikpi b{font-size:21px}
+  .igrid{grid-template-columns:minmax(0,1fr);gap:22px}
+  .iplans{grid-template-columns:minmax(0,1fr)}
+  .itab td{padding:10px 4px}
+  .itab td.it{max-width:none}
+  .itab td.it small{white-space:normal}
+  .itab td.num small{font-size:11.5px}
+  .itab th:last-child,.itab td.del{display:none}
+  .itab td.num b{font-size:14.5px}
+  .ialloc{justify-content:center}
 }
 
 .xadd{margin:4px 0 18px}
@@ -2099,7 +2192,7 @@ function renderExpenses() {
             <td><select data-k="category">${catOptions(x.category)}</select></td>
             <td><select data-k="type"><option value="out" ${x.type === 'out' ? 'selected' : ''}>Uscita</option><option value="in" ${x.type === 'in' ? 'selected' : ''}>Entrata</option></select></td>
             <td><input class="cell num ${x.type === 'in' ? 'pos' : 'neg'}" data-k="amount" inputmode="decimal" value="${numIn(x.amount)}"></td>
-            <td class="del"><button data-del title="Elimina" aria-label="Elimina">${ico('x', 18)}</button></td>
+            <td class="del"><button data-del title="Elimina" aria-label="Elimina">${ico('trash', 18)}</button></td>
           </tr>`).join('')}</tbody>
         </table></div>
         ${items.length ? '' : emptyState({icon: 'wallet', title: 'Nessun movimento in questo mese', text: 'Aggiungi una spesa o un\'entrata dal modulo qui sopra, scansiona uno scontrino o scrivilo all\'assistente.', examples: ['12,50 pizza', 'ieri 40 benzina e 12 pranzo', 'stipendio 1800 entrata']})}
@@ -2255,12 +2348,12 @@ function renderShared() {
           <td style="padding:7px 8px" class="muted" data-l="Diviso tra">${esc(splitLabel(h.x))}</td>
           <td class="calc" data-l="Tua quota">${shareOf(h.x, ME) ? EUR(shareOf(h.x, ME)) : '–'}</td>
           <td class="calc ${sign(myEffect(h.x))}" data-l="Per te">${Math.abs(myEffect(h.x)) < 0.005 ? '–' : (myEffect(h.x) > 0 ? '+' : '−') + EUR(Math.abs(myEffect(h.x)))}</td>
-          <td class="del"><button data-del title="Elimina" aria-label="Elimina">${ico('x', 18)}</button></td>
+          <td class="del"><button data-del title="Elimina" aria-label="Elimina">${ico('trash', 18)}</button></td>
         </tr>` : `<tr data-zid="${h.x.id}">
           <td class="calc" style="text-align:left" data-l="Saldato il">${new Date(h.x.date + 'T00:00').toLocaleDateString('it-IT')}</td>
           <td style="padding:7px 8px" colspan="5"><span class="inl" style="color:var(--muted)">${ico('swap', 16)}</span> <b>${esc(pName(h.x.from))}</b> ${h.x.from === ME ? 'hai dato' : 'ha dato'} ${EUR(num(h.x.amount))} a <b>${esc(pName(h.x.to))}</b></td>
           <td class="calc ${h.x.to === ME ? 'neg' : 'pos'}" data-l="Per te">${h.x.to === ME ? '−' : '+'}${EUR(num(h.x.amount))}</td>
-          <td class="del"><button data-del title="Elimina" aria-label="Elimina">${ico('x', 18)}</button></td>
+          <td class="del"><button data-del title="Elimina" aria-label="Elimina">${ico('trash', 18)}</button></td>
         </tr>`).join('')}</tbody>
     </table></div>
     <p class="hint">"Per te": + significa che il saldo si sposta a tuo favore (gli altri ti devono di più), − che devi di più tu.</p>` : ''}`;
@@ -2357,79 +2450,374 @@ function exportExpensesCSV() {
 }
 
 /* ---------- INVESTIMENTI ---------- */
+/* titoli (con ISIN e simbolo facoltativi: se ci sono il prezzo arriva da solo), piani di accumulo, grafico e allocazione */
 const invCalc = x => { const inv = num(x.qty) * num(x.avg), val = num(x.qty) * num(x.price); return {inv, val, pl: val - inv, plp: inv ? (val - inv) / inv * 100 : 0}; };
+const INV_GROUP = t => t === 'Conto deposito' ? 'Liquidità' : (t || 'Altro');
+const INV_COL = {ETF: 'var(--accent)', Azioni: 'color-mix(in srgb,var(--accent) 52%,var(--bg))', Obbligazioni: 'var(--topo)', Fondi: 'color-mix(in srgb,var(--topo) 62%,var(--bg))',
+  Liquidità: 'color-mix(in srgb,var(--topo) 32%,var(--bg))', Crypto: 'color-mix(in srgb,var(--accent) 45%,var(--topo))', Altro: 'var(--line)'};
+const Q_TYPE = {Azione: 'Azioni', ETF: 'ETF', Fondo: 'Fondi', Obbligazione: 'Obbligazioni', Crypto: 'Crypto'};
+const PAC_EVERY = [[1, 'mese'], [2, '2 mesi'], [3, '3 mesi'], [6, '6 mesi'], [12, 'anno']];
+const invQ = {at: 0, spark: {}, hist: {}, busy: false};
+const INV = () => { const I = state.investments; ['plans', 'log'].forEach(k => { if (!Array.isArray(I[k])) I[k] = []; }); if (!I.hist || typeof I.hist !== 'object') I.hist = {}; return I; };
+const invTot = () => { let inv = 0, val = 0; INV().items.forEach(x => { const c = invCalc(x); inv += c.inv; val += c.val; }); return {inv, val, pl: val - inv}; };
+const kfmt = v => Math.abs(v) >= 1e6 ? fmt(Math.round(v / 1e5) / 10) + ' Mln' : Math.abs(v) >= 1e4 ? fmt(Math.round(v / 100) / 10) + 'k' : fmt(Math.round(v));
+const sharesF = q => (Math.round(q * 1e4) / 1e4).toLocaleString('it-IT', {maximumFractionDigits: 4});
+
+/* date dei versamenti di un piano (stessa regola del server: giorno del mese, se manca l'ultimo del mese) */
+function pacSchedule(p, until, limit = 400) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(p.start || '')) return [];
+  const s = kDate(p.start), every = [1, 2, 3, 6, 12].includes(+p.every) ? +p.every : 1, day = Math.max(1, Math.min(31, +p.day || s.getDate())), out = [];
+  for (let k = 0; out.length < limit && k < 2000; k++) {
+    const y = s.getFullYear(), mo = s.getMonth() + k * every, last = new Date(y, mo + 1, 0).getDate(), d = iso(new Date(y, mo, Math.min(day, last)));
+    if (d < p.start) continue; if (d > until) break; out.push(d);
+  }
+  return out;
+}
+const pacDue = (p, t = today()) => { const done = new Set(p.done || []); return pacSchedule(p, t).filter(d => !done.has(d)).slice(-24); };
+const pacNext = (p, t = today()) => { const done = new Set(p.done || []); return pacSchedule(p, iso(addDays(kDate(t), 400))).find(d => d >= t && !done.has(d)); };
+function invBuy(x, amount, price) {
+  amount = num(amount); price = num(price); if (amount <= 0 || price <= 0) return 0;
+  const q0 = num(x.qty), a0 = num(x.avg), q = amount / price;
+  x.qty = Math.round((q0 + q) * 1e6) / 1e6; x.avg = Math.round((q0 * a0 + amount) / (q0 + q) * 1e6) / 1e6; return q;
+}
+function pacRecord(p, x, d, amount, price) {
+  const q = invBuy(x, amount, price); if (!q) return 0;
+  p.done = [...new Set([...(p.done || []), d])].sort().slice(-400);
+  INV().log.push({d, item: x.id, plan: p.id, amount: num(amount), qty: Math.round(q * 1e6) / 1e6, price: num(price)}); return q;
+}
+/* senza server (copia locale) i versamenti automatici li registra la pagina */
+function pacLocalRun() {
+  if (REMOTE) return false; let any = false;
+  INV().plans.forEach(p => { if (!p.auto || p.paused) return; const x = INV().items.find(y => y.id === p.item); if (!x || num(x.price) <= 0) return;
+    pacDue(p).forEach(d => { if (pacRecord(p, x, d, p.amount, x.price)) any = true; }); });
+  return any;
+}
+function invSnapshot() {
+  const I = INV(); if (!I.items.length) return false;
+  const T = invTot(), v = [Math.round(T.inv * 100) / 100, Math.round(T.val * 100) / 100], k = today();
+  if (I.hist[k] && I.hist[k][0] === v[0] && I.hist[k][1] === v[1]) return false;
+  I.hist[k] = v; const ks = Object.keys(I.hist).sort(); ks.slice(0, Math.max(0, ks.length - 1100)).forEach(x => delete I.hist[x]); return true;
+}
+
+/* prezzi dal mercato: una richiesta per tutti i titoli con simbolo, al massimo ogni 10 minuti */
+async function invRefresh(force) {
+  const I = INV(), list = I.items.filter(x => x.symbol && x.auto !== false);
+  if (!REMOTE || !FEATURES.quotes || !list.length || invQ.busy || (!force && Date.now() - invQ.at < 6e5)) return;
+  invQ.busy = true; const btn = $('#iRef'); if (btn) btn.disabled = true;
+  try {
+    const j = await api('api/quotes?s=' + encodeURIComponent([...new Set(list.map(x => x.symbol))].join(',')));
+    invQ.at = Date.now(); let n = 0;
+    list.forEach(x => { const q = j.quotes?.[x.symbol]; if (!q || !q.price) return; invQ.spark[x.symbol] = q.spark || [];
+      if (num(x.price) !== Math.round(q.price * 1e4) / 1e4 || x.updated !== today()) { x.price = Math.round(q.price * 1e4) / 1e4; x.updated = today(); n++; }
+      x.chg = q.chg; x.qat = q.at; x.ccy = q.ccy; });
+    if (n) save();
+    if (force) toast(Object.keys(j.errors || {}).length ? `Prezzi aggiornati, tranne ${Object.keys(j.errors).join(', ')}` : 'Prezzi aggiornati.');
+  } catch (e) { if (force) toast(e.message); }
+  invQ.busy = false;
+  if (state.view === 'investments' && !sheetEl) renderMain();
+}
+async function invLoadHist(rng) {
+  const syms = [...new Set(INV().items.filter(x => x.symbol && num(x.qty) > 0).map(x => x.symbol))];
+  const key = rng + ':' + syms.join(',');
+  if (!REMOTE || !FEATURES.quotes || !syms.length || invQ.hist[key]) return;
+  invQ.hist[key] = 'loading';
+  try { invQ.hist[key] = (await api(`api/quotes/history?range=${rng}&s=${encodeURIComponent(syms.join(','))}`)).series || {}; }
+  catch (e) { invQ.hist[key] = {}; }
+  if (state.view === 'investments' && !sheetEl) drawInvChart();
+}
+/* punti del grafico: le foto giornaliere del valore e, prima della prima foto, una stima con le quantità di oggi */
+function invSeries(rng) {
+  const I = INV(), T = invTot(), t = today();
+  const from = rng === 'max' ? '0000' : iso(addDays(new Date(), rng === '3mo' ? -92 : -366));
+  const real = Object.entries(I.hist).filter(([d]) => d >= from && d <= t).sort((a, b) => a[0].localeCompare(b[0])).map(([d, v]) => ({d, inv: v[0], val: v[1]}));
+  if (!real.length || real[real.length - 1].d !== t) real.push({d: t, inv: T.inv, val: T.val});
+  const syms = [...new Set(I.items.filter(x => x.symbol && num(x.qty) > 0).map(x => x.symbol))];
+  const H = invQ.hist[(rng === 'max' ? '5y' : rng) + ':' + syms.join(',')];
+  const est = [];
+  if (H && typeof H === 'object' && Object.keys(H).length) {
+    const first = real[0].d, fixed = I.items.filter(x => !(x.symbol && H[x.symbol]?.length)).reduce((a, x) => a + num(x.qty) * num(x.price), 0);
+    const days = [...new Set(Object.values(H).flat().map(p => p[0]))].filter(d => d >= from && d < first).sort();
+    const idx = {}, lastC = {};
+    days.forEach(d => {
+      let v = fixed, ok = true;
+      I.items.forEach(x => { const s = H[x.symbol]; if (!x.symbol || !s?.length) return;
+        let i = idx[x.symbol] || 0; while (i < s.length && s[i][0] <= d) { lastC[x.symbol] = s[i][1]; i++; } idx[x.symbol] = i;
+        if (lastC[x.symbol] == null) ok = false; else v += num(x.qty) * lastC[x.symbol]; });
+      if (ok) est.push({d, val: v, est: true});
+    });
+  }
+  return {est, real};
+}
+function drawInvChart() {
+  const box = $('#iChart'); if (!box) return;
+  const rng = ui.invR || '1y', {est, real} = invSeries(rng), pts = [...est, ...real];
+  $('#iEstL') && ($('#iEstL').hidden = !est.length);
+  if (pts.length < 2) { box.innerHTML = `<p class="hint" style="margin:0;padding:40px 0;text-align:center">${FEATURES.quotes && INV().items.some(x => x.symbol) ? 'Sto caricando l\'andamento…' : 'Il grafico si riempie giorno per giorno: Tacuìn segna il valore del portafoglio ogni giorno. Con il codice ISIN dei titoli vedi subito anche l\'ultimo anno.'}</p>`; return; }
+  const W = Math.max(280, box.clientWidth || 600), H = matchMedia('(max-width:760px)').matches ? 170 : 240, L = 44, R = 8, Tp = 10, B = 24;
+  const vals = pts.flatMap(p => p.inv != null ? [p.val, p.inv] : [p.val]);
+  let lo = Math.min(...vals), hi = Math.max(...vals); if (hi - lo < 1) { hi += 1; lo -= 1; } const pad = (hi - lo) * .08; lo -= pad; hi += pad;
+  const t0 = kDate(pts[0].d).getTime(), t1 = Math.max(t0 + 864e5, kDate(pts[pts.length - 1].d).getTime());
+  const X = d => L + (kDate(d).getTime() - t0) / (t1 - t0) * (W - L - R), Y = v => Tp + (hi - v) / (hi - lo) * (H - Tp - B);
+  const line = (a, k) => a.map(p => X(p.d).toFixed(1) + ',' + Y(p[k]).toFixed(1)).join(' ');
+  const valAll = [...est, ...real], area = `M${X(valAll[0].d).toFixed(1)} ${(H - B)} L` + valAll.map(p => X(p.d).toFixed(1) + ' ' + Y(p.val).toFixed(1)).join(' L') + ` L${X(valAll[valAll.length - 1].d).toFixed(1)} ${H - B} Z`;
+  const grid = [0, 1, 2, 3].map(i => { const v = hi - (hi - lo) * i / 3, y = Y(v); return `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" style="stroke:var(--line)" stroke-width="1"/><text x="${L - 6}" y="${y + 4}" text-anchor="end" class="ax">${kfmt(v)}</text>`; }).join('');
+  const nX = W < 420 ? 3 : 5, xl = Array.from({length: nX}, (_, i) => { const tt = t0 + (t1 - t0) * i / (nX - 1), d = new Date(tt);
+    return `<text x="${(L + (W - L - R) * i / (nX - 1)).toFixed(1)}" y="${H - 6}" text-anchor="${i === 0 ? 'start' : i === nX - 1 ? 'end' : 'middle'}" class="ax">${(t1 - t0) > 400 * 864e5 ? MESI3[d.getMonth()] + ' ' + String(d.getFullYear()).slice(2) : d.getDate() + ' ' + MESI3[d.getMonth()]}</text>`; }).join('');
+  const realV = est.length ? [est[est.length - 1], ...real] : real, last = real[real.length - 1];
+  box.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Andamento del portafoglio: valore e versato" class="ich">
+    ${grid}${xl}<path d="${area}" style="fill:var(--accent)" fill-opacity=".08"/>
+    ${est.length ? `<polyline points="${line(est.concat(real[0]), 'val')}" fill="none" style="stroke:var(--accent)" stroke-width="2" stroke-opacity=".45"/>` : ''}
+    ${real.length > 1 ? `<polyline points="${line(real, 'inv')}" fill="none" style="stroke:var(--topo)" stroke-width="2" stroke-dasharray="5 4"/>` : ''}
+    <polyline points="${line(realV.length > 1 ? realV : real, 'val')}" fill="none" style="stroke:var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="${X(last.d)}" cy="${Y(last.val)}" r="4" style="fill:var(--accent)"/>
+    <g id="iHov" hidden><line y1="${Tp}" y2="${H - B}" style="stroke:var(--muted)" stroke-width="1"/><circle r="4" style="fill:var(--accent);stroke:var(--bg)" stroke-width="2"/></g></svg>
+    <div class="itip" id="iTip" hidden></div>`;
+  const svg = box.querySelector('svg'), hov = box.querySelector('#iHov'), tip = box.querySelector('#iTip');
+  const move = e => { const r = svg.getBoundingClientRect(), x = (e.clientX - r.left);
+    let best = pts[0]; pts.forEach(p => { if (Math.abs(X(p.d) - x) < Math.abs(X(best.d) - x)) best = p; });
+    hov.hidden = false; tip.hidden = false; const px = X(best.d), py = Y(best.val);
+    hov.querySelector('line').setAttribute('x1', px); hov.querySelector('line').setAttribute('x2', px); hov.querySelector('circle').setAttribute('cx', px); hov.querySelector('circle').setAttribute('cy', py);
+    tip.innerHTML = `<b>${esc(dayTitle(best.d).replace(/^(Oggi|Ieri), .*/, '$1'))}</b><span>Valore ${EUR(best.val)}</span>${best.inv != null ? `<span class="muted">Versato ${EUR(best.inv)}</span>` : '<span class="muted">stima con le quantità di oggi</span>'}`;
+    tip.style.left = Math.min(Math.max(px - 70, 0), W - 150) + 'px'; tip.style.top = Math.max(py - 70, 0) + 'px'; };
+  svg.addEventListener('pointermove', move); svg.addEventListener('pointerdown', move);
+  svg.addEventListener('pointerleave', () => { hov.hidden = true; tip.hidden = true; });
+}
+function invDonut(by, total) {
+  let acc = 0; const C = 2 * Math.PI * 15.9;
+  const segs = by.map(([t, v]) => { const p = v / total * 100, s = `<circle cx="21" cy="21" r="15.9" fill="none" style="stroke:${INV_COL[t] || INV_COL.Altro}" stroke-width="6" stroke-dasharray="${(p * C / 100).toFixed(3)} ${(C - p * C / 100).toFixed(3)}" stroke-dashoffset="${(C / 4 - acc * C / 100).toFixed(3)}"/>`; acc += p; return s; }).join('');
+  return `<svg viewBox="0 0 42 42" width="140" height="140" role="img" aria-label="Allocazione per tipo" class="idonut">${segs}
+    <text x="21" y="20.5" text-anchor="middle" class="dv">${esc(kfmt(total))} €</text><text x="21" y="25.5" text-anchor="middle" class="dl">${INV().items.length} ${INV().items.length === 1 ? 'titolo' : 'titoli'}</text></svg>`;
+}
+const spark = (a, up) => { if (!a || a.length < 2) return ''; const lo = Math.min(...a), hi = Math.max(...a) || 1, w = 72, h = 22;
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline points="${a.map((v, i) => (i / (a.length - 1) * w).toFixed(1) + ',' + (2 + (hi - v) / ((hi - lo) || 1) * (h - 4)).toFixed(1)).join(' ')}" fill="none" style="stroke:${up ? 'var(--pos)' : 'var(--danger)'}" stroke-width="1.6"/></svg>`; };
+
 function renderInvestments() {
-  const I = state.investments, m = $('#main');
+  const I = INV(), m = $('#main'), rng = ui.invR || '1y';
+  if (pacLocalRun() | invSnapshot()) save();
+  const T = invTot(), groups = [...new Set(I.items.map(x => INV_GROUP(x.type)))];
+  let F = ui.invF || 'Tutti'; if (F !== 'Tutti' && !groups.includes(F)) F = 'Tutti';
+  const by = {}; I.items.forEach(x => { const g = INV_GROUP(x.type); by[g] = (by[g] || 0) + invCalc(x).val; });
+  const alloc = Object.entries(by).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+  const plans = I.plans.filter(p => I.items.some(x => x.id === p.item));
+  const monthly = plans.filter(p => !p.paused).reduce((a, p) => a + num(p.amount) / (+p.every || 1), 0);
+  const nexts = plans.filter(p => !p.paused).map(pacNext).filter(Boolean).sort(), paidPac = I.log.reduce((a, l) => a + num(l.amount), 0);
+  const name = id => { const x = I.items.find(y => y.id === id); return x ? (x.name || x.symbol || 'Titolo') : 'Titolo'; };
+  const rows = I.items.filter(x => F === 'Tutti' || INV_GROUP(x.type) === F).sort((a, b) => invCalc(b).val - invCalc(a).val);
+  const quoted = FEATURES.quotes && I.items.some(x => x.symbol);
   m.innerHTML = `
     <div class="head">${hIcon('trend')}<h1 class="title">Investimenti</h1></div>
-    <div class="cards" id="iCards"></div>
-    <div class="toolbar"><button class="primary" id="iAdd">${ico('plus', 18, 2.2)}Nuovo investimento</button><span class="sp"></span><button id="iCsv">Esporta CSV</button></div>
-    <div class="tablewrap"><table class="dt cardt">
-      <thead><tr><th>Nome</th><th>Tipo</th><th class="num">Quantità</th><th class="num">Prezzo medio</th><th class="num">Prezzo attuale</th><th class="num">Investito</th><th class="num">Valore</th><th class="num">Guadagno</th><th class="num">%</th><th></th></tr></thead>
-      <tbody id="iBody">${I.items.map(x => `<tr data-id="${x.id}">
-        <td class="w"><input class="cell wide" data-k="name" value="${esc(x.name)}" placeholder="es. ETF MSCI World" aria-label="Nome"></td>
-        <td data-l="Tipo"><select data-k="type">${INV_TYPES.map(t => `<option ${t === x.type ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
-        <td data-l="Quantità"><input class="cell num" data-k="qty" inputmode="decimal" value="${numIn(x.qty)}" placeholder="0"></td>
-        <td data-l="Prezzo medio"><input class="cell num" data-k="avg" inputmode="decimal" value="${numIn(x.avg)}" placeholder="0,00"></td>
-        <td data-l="Prezzo attuale"><input class="cell num" data-k="price" inputmode="decimal" value="${numIn(x.price)}" placeholder="0,00" title="${x.updated ? 'Aggiornato il ' + new Date(x.updated).toLocaleDateString('it-IT') : 'Non ancora aggiornato'}"></td>
-        <td class="calc" data-c="inv" data-l="Investito"></td><td class="calc" data-c="val" data-l="Valore"></td><td class="calc" data-c="pl" data-l="Guadagno"></td><td class="calc" data-c="plp" data-l="%"></td>
-        <td class="del"><button data-del title="Elimina" aria-label="Elimina">${ico('x', 18)}</button></td>
-      </tr>`).join('')}</tbody>
-    </table></div>
-    ${I.items.length ? '' : emptyState({icon: 'trend', title: 'Nessun investimento', text: 'Tocca «+ Nuovo investimento» e scrivi quantità, prezzo di carico e prezzo attuale: Tacuìn calcola valore, guadagno e allocazione.'})}
-    <h3 class="sub">Allocazione per tipo</h3><div class="bars" id="iBars" style="max-width:520px"></div>
-`;
-
-  $('#iAdd').onclick = () => {
-    I.items.push({id: uid(), name: '', type: 'ETF', qty: '', avg: '', price: ''}); save(); renderMain();
-    $('#iBody').lastElementChild?.querySelector('input')?.focus();
-  };
-  $('#iCsv').onclick = exportInvestmentsCSV;
+    <div class="toolbar"><button class="primary" id="iAdd">${ico('plus', 18, 2.2)}Investimento</button>${I.items.length ? `<button data-pac>Piano di accumulo</button>` : ''}<span class="sp"></span>
+      ${quoted ? `<button id="iRef" aria-label="Aggiorna prezzi">${ico('repeat', 16)}<span class="hide-m">Aggiorna prezzi</span></button>` : ''}</div>
+    ${I.items.length ? `
+    <div class="ikpi">
+      <div><span>Valore</span><b>${EUR(T.val)}</b><small>${I.items.length} ${I.items.length === 1 ? 'titolo' : 'titoli'}</small></div>
+      <div><span>Versato</span><b>${EUR(T.inv)}</b><small>${paidPac ? `di cui ${EUR(paidPac)} con i piani` : 'quantità × prezzo medio'}</small></div>
+      <div class="${sign(T.pl)}"><span>Guadagno</span><b>${T.pl > 0 ? '+' : ''}${EUR(T.pl)}</b><small>${T.inv ? PCT(T.pl / T.inv * 100) + ' sul versato' : '&nbsp;'}</small></div>
+      <div><span>Piani di accumulo</span><b>${plans.length ? EUR(monthly) + '<em>/mese</em>' : '—'}</b><small>${nexts.length ? 'prossimo ' + esc(dayTitle(nexts[0]).replace(/^(Oggi|Domani), .*/, '$1').toLowerCase()) : plans.length ? 'in pausa' : 'nessuno'}</small></div>
+    </div>
+    <div class="igrid">
+      <section class="ibox"><div class="ibox-h"><b>Andamento</b>
+        <span class="ileg"><i class="lv"></i>Valore</span><span class="ileg"><i class="li"></i>Versato</span><span class="ileg" id="iEstL" hidden><i class="le"></i>Stima</span><span style="flex:1"></span>
+        <span class="iseg" id="iRng">${[['3mo', '3M'], ['1y', '1A'], ['max', 'Tutto']].map(([v, l]) => `<button data-r="${v}" class="${v === rng ? 'on' : ''}">${l}</button>`).join('')}</span></div>
+        <div id="iChart" class="ichart"></div></section>
+      <section class="ibox"><div class="ibox-h"><b>Allocazione</b></div>
+        ${alloc.length ? `<div class="ialloc">${invDonut(alloc, T.val)}<div class="ilegend">${alloc.map(([t, v]) => `<span><i style="background:${INV_COL[t] || INV_COL.Altro}"></i>${esc(t)}<b>${fmt(Math.round(v / T.val * 1000) / 10)}%</b></span>`).join('')}</div></div>`
+        : '<p class="hint" style="margin:0">Scrivi quantità e prezzo per vedere come è diviso il portafoglio.</p>'}</section>
+    </div>
+    <section class="ibox isec"><div class="ibox-h"><b>Piani di accumulo</b><span class="muted hide-m">${plans.length ? `${EUR(monthly)} al mese${nexts.length ? ' · prossimo versamento ' + esc(dayTitle(nexts[0]).toLowerCase()) : ''}` : ''}</span><span style="flex:1"></span><button class="linkbtn" data-pac>+ Nuovo</button></div>
+      ${plans.length ? `<div class="iplans">${plans.map(p => { const due = p.auto ? [] : pacDue(p), n = I.log.filter(l => l.plan === p.id).length, tot = I.log.filter(l => l.plan === p.id).reduce((a, l) => a + num(l.amount), 0), x = I.items.find(y => y.id === p.item), nx = pacNext(p);
+        return `<div class="iplan"><button class="iplan-b" data-pedit="${p.id}"><span class="itype">${esc(INV_GROUP(x?.type))}</span><span class="tx"><b>${esc(name(p.item))}</b>
+          <small>${EUR(num(p.amount))} ogni ${esc((PAC_EVERY.find(e => e[0] === +p.every) || PAC_EVERY[0])[1])}, il ${+p.day || kDate(p.start).getDate()} · ${p.paused ? 'in pausa' : p.auto ? 'si registra da solo' : 'lo registri tu'}${n ? ` · ${n} ${n === 1 ? 'versamento' : 'versamenti'}` : ''}${nx && !p.paused ? ' · prossimo ' + esc(dayTitle(nx).replace(/^(Oggi|Domani), .*/, '$1').toLowerCase()) : ''}</small></span>
+          ${tot ? `<b class="r">${EUR(tot)}</b>` : ''}</button>
+          ${due.length ? `<button class="primary iplan-pay" data-ppay="${p.id}">Registra${due.length > 1 ? ' (' + due.length + ')' : ''}</button>` : ''}</div>`; }).join('')}</div>`
+        : `<p class="hint" style="margin:0">Un piano di accumulo investe la stessa cifra ogni mese (o ogni 2, 3, 6 mesi) nello stesso titolo. Tacuìn ti avvisa il giorno prima e, se vuoi, registra da solo il versamento.</p>`}</section>
+    <section class="ibox isec">
+      <div class="tabs" id="iTabs" role="tablist">${['Tutti', ...INV_TYPES.map(INV_GROUP).filter((t, i, a) => a.indexOf(t) === i && groups.includes(t))].map(t => `<button data-f="${esc(t)}" class="${t === F ? 'on' : ''}" role="tab" aria-selected="${t === F}">${esc(t)}</button>`).join('')}</div>
+      <div class="tablewrap" style="border-top:0"><table class="dt itab">
+        <thead><tr><th>Titolo</th><th class="hide-m">Tipo</th><th class="num hide-m">Quantità</th><th class="num hide-m">Prezzo medio</th><th class="num hide-m">Prezzo</th><th class="hide-m"></th><th class="num">Valore</th><th class="num">Risultato</th><th></th></tr></thead>
+        <tbody id="iBody">${rows.map(x => { const c = invCalc(x), sp = invQ.spark[x.symbol];
+          return `<tr data-id="${x.id}" tabindex="0">
+          <td class="it"><b>${esc(x.name || x.symbol || 'Senza nome')}</b><small>${esc([x.symbol ? x.symbol + (x.exch ? ' · ' + x.exch : '') : x.isin || '', innerWidth <= 760 ? INV_GROUP(x.type) : '', innerWidth <= 760 && num(x.qty) ? sharesF(num(x.qty)) + ' quote' : ''].filter(Boolean).join(' · ') || INV_GROUP(x.type))}</small></td>
+          <td class="hide-m">${esc(INV_GROUP(x.type))}</td><td class="num hide-m">${num(x.qty) ? sharesF(num(x.qty)) : '–'}</td><td class="num hide-m">${num(x.avg) ? EUR(num(x.avg)) : '–'}</td>
+          <td class="num hide-m">${num(x.price) ? EUR(num(x.price)) : '–'}${x.chg != null && x.symbol ? `<small class="${sign(x.chg)}">${PCT(x.chg)} oggi</small>` : x.updated ? `<small class="muted">${esc(new Date(x.updated).toLocaleDateString('it-IT', {day: 'numeric', month: 'short'}))}</small>` : ''}</td>
+          <td class="hide-m isp">${spark(sp, sp && sp[sp.length - 1] >= sp[0])}</td>
+          <td class="num"><b>${EUR(c.val)}</b></td>
+          <td class="num ${sign(c.pl)}"><b>${c.inv ? PCT(c.plp) : '–'}</b><small>${c.inv ? (c.pl > 0 ? '+' : '') + EUR(c.pl) : ''}</small></td>
+          <td class="del"><button data-del title="Elimina" aria-label="Elimina ${esc(x.name || 'investimento')}">${ico('trash', 18)}</button></td></tr>`; }).join('')}</tbody>
+      </table></div>
+      <div class="ifoot"><span class="muted">${quoted ? `Prezzi dal mercato (Yahoo Finance) per i titoli con ISIN, gli altri li scrivi tu${invQ.at ? ' · aggiornati alle ' + new Date(invQ.at).toTimeString().slice(0, 5) : ''}.` : FEATURES.quotes ? 'Scrivi il codice ISIN di un titolo e il prezzo si aggiorna da solo.' : 'Prezzi scritti a mano: tocca un titolo per aggiornarlo.'}</span><span style="flex:1"></span><button class="linkbtn" id="iCsv">Esporta CSV</button></div>
+    </section>` : emptyState({icon: 'trend', title: 'Nessun investimento', text: FEATURES.quotes ? 'Tocca «Nuovo» e scrivi il codice ISIN del titolo (lo trovi sull\'app della banca): Tacuìn trova nome e prezzo, tu aggiungi quantità e prezzo medio.' : 'Tocca «Nuovo» e scrivi quantità, prezzo di carico e prezzo attuale: Tacuìn calcola valore, guadagno e allocazione.'})}`;
+  $('#iAdd').onclick = () => invSheet(null);
+  m.querySelectorAll('[data-pac]').forEach(b => b.onclick = () => pacSheet(null));
+  $('#iRef') && ($('#iRef').onclick = () => invRefresh(true));
+  $('#iCsv') && ($('#iCsv').onclick = exportInvestmentsCSV);
+  $('#iTabs') && ($('#iTabs').onclick = e => { const b = e.target.closest('[data-f]'); if (!b) return; ui.invF = b.dataset.f; renderMain(); });
+  $('#iRng') && ($('#iRng').onclick = e => { const b = e.target.closest('[data-r]'); if (!b) return; ui.invR = b.dataset.r; m.querySelectorAll('#iRng button').forEach(y => y.classList.toggle('on', y === b)); drawInvChart(); invLoadHist(b.dataset.r === 'max' ? '5y' : b.dataset.r); });
+  m.querySelectorAll('[data-pedit]').forEach(b => b.onclick = () => pacSheet(I.plans.find(p => p.id === b.dataset.pedit)));
+  m.querySelectorAll('[data-ppay]').forEach(b => b.onclick = () => pacPaySheet(I.plans.find(p => p.id === b.dataset.ppay)));
   const body = $('#iBody');
-  const rowItem = el => I.items.find(x => x.id === el.closest('tr').dataset.id);
-  const onEdit = e => {
-    const k = e.target.dataset.k; if (!k) return;
-    const x = rowItem(e.target);
-    x[k] = ['qty', 'avg', 'price'].includes(k) ? num(e.target.value) : e.target.value;
-    if (k === 'price') x.updated = today();
-    save(); refreshInvestments();
-  };
-  body.addEventListener('input', onEdit);
-  body.addEventListener('change', onEdit);
-  body.addEventListener('click', e => {
-    if (!e.target.closest('[data-del]')) return;
-    const x = rowItem(e.target);
-    const i = I.items.indexOf(x); I.items.splice(i, 1); toTrash('investment', x, x.name || 'Investimento', `Investimento · ${x.type || ''}`, {i}); renderMain();
-  });
-  refreshInvestments();
+  if (body) {
+    const item = el => I.items.find(x => x.id === el.closest('tr')?.dataset.id);
+    body.onclick = e => { const x = item(e.target); if (!x) return;
+      if (e.target.closest('[data-del]')) { const i = I.items.indexOf(x); I.items.splice(i, 1); toTrash('investment', x, x.name || 'Investimento', `Investimento · ${x.type || ''}`, {i}); renderMain(); return; }
+      invSheet(x); };
+    body.onkeydown = e => { if (e.key === 'Enter' && e.target.matches('tr')) invSheet(item(e.target)); };
+  }
+  drawInvChart();
+  if (I.items.length) { invLoadHist(rng === 'max' ? '5y' : rng); invRefresh(false); }
 }
-function refreshInvestments() {
-  const I = state.investments;
-  let inv = 0, val = 0; const by = {};
-  I.items.forEach(x => {
-    const c = invCalc(x); inv += c.inv; val += c.val; by[x.type] = (by[x.type] || 0) + c.val;
-    const tr = document.querySelector(`#iBody tr[data-id="${x.id}"]`); if (!tr) return;
-    tr.querySelector('[data-c=inv]').textContent = EUR(c.inv);
-    tr.querySelector('[data-c=val]').textContent = EUR(c.val);
-    const pl = tr.querySelector('[data-c=pl]'), plp = tr.querySelector('[data-c=plp]');
-    pl.textContent = EUR(c.pl); plp.textContent = c.inv ? PCT(c.plp) : '–';
-    pl.className = plp.className = 'calc ' + sign(c.pl);
+let invResizeT; addEventListener('resize', () => { clearTimeout(invResizeT); invResizeT = setTimeout(() => { if (state.view === 'investments') drawInvChart(); }, 150); });
+
+/* scheda di un titolo: ISIN → nome, tipo e prezzo; poi quantità e prezzo medio */
+function invSheet(x0, after) {
+  const isNew = !x0, x = x0 ? {...x0} : {id: uid(), name: '', type: 'ETF', qty: '', avg: '', price: '', isin: '', symbol: '', auto: true};
+  let cands = [];
+  const sh = openSheet(`<form id="ivF" style="display:contents">
+    <div class="sh-h"><button type="button" class="more" data-x aria-label="Chiudi">${ico('x', 22)}</button><b style="flex:1;font-size:17px;text-align:center">${isNew ? 'Nuovo investimento' : 'Investimento'}</b><button class="primary" type="submit" style="margin-right:8px">Salva</button></div>
+    <div class="sh-b apf ivf">
+      <div class="ivisin"><label class="fl">Codice ISIN${FEATURES.quotes ? ' (trova nome e prezzo da solo)' : ' (facoltativo)'}<span class="ivrow"><input class="field" id="ivIsin" value="${esc(x.isin || '')}" placeholder="es. IE00BK5BQT80" maxlength="14" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        ${FEATURES.quotes ? `<button type="button" id="ivFind">Cerca</button>` : ''}</span></label>
+        <div id="ivCand" class="gchips" style="flex-wrap:wrap"></div><p class="hint" id="ivMsg" style="margin:0" hidden></p></div>
+      <label class="fl">Nome<input class="field" id="ivName" value="${esc(x.name || '')}" placeholder="es. Vanguard FTSE All-World" maxlength="120" required></label>
+      <div class="fl">Tipo<div class="gchips" id="ivType" style="flex-wrap:wrap">${INV_TYPES.map(t => `<button type="button" data-t="${esc(t)}" class="${t === x.type ? 'on' : ''}">${esc(t)}</button>`).join('')}</div></div>
+      <div class="ivg"><label class="fl">Quantità<input class="field" id="ivQ" inputmode="decimal" value="${numIn(x.qty)}" placeholder="0"></label>
+        <label class="fl">Prezzo medio di carico<input class="field" id="ivA" inputmode="decimal" value="${numIn(x.avg)}" placeholder="0,00"></label></div>
+      <div class="ivg"><label class="fl">Prezzo attuale<input class="field" id="ivP" inputmode="decimal" value="${numIn(x.price)}" placeholder="0,00"></label>
+        <label class="fl" id="ivAutoL" ${x.symbol && FEATURES.quotes ? '' : 'hidden'}>Prezzo dal mercato<span class="ivrow" style="min-height:44px"><input type="checkbox" class="sw" id="ivAuto" ${x.auto !== false ? 'checked' : ''}><small class="muted" id="ivSym">${esc(x.symbol || '')}</small></span></label></div>
+      <p class="hint" id="ivCalc" style="margin:0"></p>
+      <div id="ivChart" class="ivchart"></div>
+      ${isNew ? '' : `<button type="button" class="ghost dangerbtn" id="ivDel" style="align-self:flex-start">${ico('trash', 16)}Elimina investimento</button>`}
+    </div></form>`, true);
+  const $$ = s => sh.querySelector(s);
+  const calc = () => { const q = num($$('#ivQ').value), a = num($$('#ivA').value), p = num($$('#ivP').value), inv = q * a, val = q * p;
+    $$('#ivCalc').innerHTML = q && p ? `Valore <b>${EUR(val)}</b>${a ? ` · versato ${EUR(inv)} · <b class="${sign(val - inv)}">${val - inv > 0 ? '+' : ''}${EUR(val - inv)} (${PCT((val - inv) / inv * 100)})</b>` : ''}` : ''; };
+  ['#ivQ', '#ivA', '#ivP'].forEach(s => $$(s).addEventListener('input', calc)); calc();
+  $$('#ivP').addEventListener('input', () => { if (x.symbol && $$('#ivAuto').checked) { $$('#ivAuto').checked = false; } });
+  $$('#ivType').onclick = e => { const b = e.target.closest('[data-t]'); if (!b) return; x.type = b.dataset.t; sh.querySelectorAll('#ivType button').forEach(y => y.classList.toggle('on', y === b)); };
+  const setType = t => { if (!t || !INV_TYPES.includes(t)) return; x.type = t; sh.querySelectorAll('#ivType button').forEach(y => y.classList.toggle('on', y.dataset.t === t)); };
+  const msg = t => { $$('#ivMsg').hidden = !t; $$('#ivMsg').textContent = t || ''; };
+  const miniChart = async () => {
+    const box = $$('#ivChart'); if (!x.symbol || !FEATURES.quotes || !REMOTE) { box.innerHTML = ''; return; }
+    box.innerHTML = '<p class="hint" style="margin:0">Carico l\'andamento…</p>';
+    let s; try { s = (await api(`api/quotes/history?range=1y&s=${encodeURIComponent(x.symbol)}`)).series?.[x.symbol]; } catch (e) { box.innerHTML = ''; return; }
+    if (!s || s.length < 2 || !sh.isConnected) { box.innerHTML = ''; return; }
+    const a = s.map(p => p[1]), lo = Math.min(...a), hi = Math.max(...a), W = Math.max(260, box.clientWidth || 320), H = 90, ch = (a[a.length - 1] / a[0] - 1) * 100;
+    box.innerHTML = `<div class="ivch-h"><b>Ultimo anno</b><span class="${sign(ch)}">${PCT(ch)}</span><span class="muted">min ${EUR(lo)} · max ${EUR(hi)}</span></div>
+      <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-label="Andamento dell'ultimo anno"><polyline points="${a.map((v, i) => (i / (a.length - 1) * W).toFixed(1) + ',' + (4 + (hi - v) / ((hi - lo) || 1) * (H - 8)).toFixed(1)).join(' ')}" fill="none" style="stroke:var(--accent)" stroke-width="2"/></svg>`; };
+  const useQuote = (q, c) => {
+    x.symbol = q.symbol; x.exch = (c && c.exchange) || q.exchange || ''; x.ccy = q.ccy; x.chg = q.chg; x.qat = q.at;
+    $$('#ivP').value = numIn(Math.round(q.price * 1e4) / 1e4); x.updated = today(); invQ.spark[q.symbol] = q.spark || [];
+    $$('#ivAutoL').hidden = false; $$('#ivAuto').checked = true; $$('#ivSym').textContent = `${q.symbol}${x.exch ? ' · ' + x.exch : ''}${q.ccy && q.ccy !== 'EUR' ? ' · in ' + q.ccy + ', convertito in euro' : ''}`;
+    calc(); miniChart(); };
+  const drawCands = () => { $$('#ivCand').innerHTML = cands.length > 1 ? cands.map(c => `<button type="button" data-s="${esc(c.symbol)}" class="${c.symbol === x.symbol ? 'on' : ''}" title="${esc(c.name)}">${esc(c.exchange || c.symbol)} · ${esc(c.symbol)}</button>`).join('') : ''; };
+  $$('#ivCand').onclick = async e => { const b = e.target.closest('[data-s]'); if (!b) return;
+    sh.querySelectorAll('#ivCand button').forEach(y => y.classList.toggle('on', y === b)); msg('Carico il prezzo…');
+    try { const j = await api('api/quotes?s=' + encodeURIComponent(b.dataset.s)), q = j.quotes?.[b.dataset.s];
+      if (q) { useQuote(q, cands.find(c => c.symbol === b.dataset.s)); msg(''); } else msg('Nessun prezzo su questa borsa: provane un\'altra.'); } catch (err) { msg(err.message); } };
+  const find = async () => {
+    const v = $$('#ivIsin').value.replace(/\s/g, '').toUpperCase(); $$('#ivIsin').value = v;
+    if (!/^[A-Z]{2}[A-Z0-9]{9}\d$/.test(v)) { msg('Il codice ISIN ha 12 caratteri: 2 lettere del paese e 10 tra lettere e numeri (es. IE00BK5BQT80).'); return; }
+    msg('Cerco…'); $$('#ivFind').disabled = true;
+    try {
+      const j = await api('api/quotes/isin?isin=' + encodeURIComponent(v)); cands = j.candidates || [];
+      if (!cands.length) { msg('Non trovo questo ISIN: scrivi nome e prezzo a mano (resta salvato il codice).'); x.symbol = ''; drawCands(); return; }
+      const c0 = cands.find(c => c.symbol === j.quote?.symbol) || cands[0];
+      if (!$$('#ivName').value.trim() || $$('#ivName').dataset.auto) { $$('#ivName').value = c0.name; $$('#ivName').dataset.auto = '1'; }
+      setType(Q_TYPE[c0.type] || (j.quote && Q_TYPE[j.quote.type]));
+      if (j.quote) { useQuote(j.quote, c0); msg(cands.length > 1 ? `Trovato su ${cands.length} borse: scegli quella dove l'hai comprato.` : ''); } else msg('Trovato, ma senza prezzo: scegli una borsa o scrivi il prezzo a mano.');
+      drawCands();
+    } catch (err) { msg(err.message); }
+    finally { $$('#ivFind').disabled = false; }
+  };
+  $$('#ivFind')?.addEventListener('click', find);
+  $$('#ivIsin').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); FEATURES.quotes && find(); } });
+  $$('#ivIsin').addEventListener('input', () => { const v = $$('#ivIsin').value.replace(/\s/g, ''); if (FEATURES.quotes && v.length === 12 && v.toUpperCase() !== (x.isin || '')) find(); });
+  $$('#ivName').addEventListener('input', () => { delete $$('#ivName').dataset.auto; });
+  sh.querySelector('[data-x]').onclick = closeSheet;
+  $$('#ivF').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $$('#ivName').value.trim(); if (!name) { $$('#ivName').focus(); return; }
+    const isin = $$('#ivIsin').value.replace(/\s/g, '').toUpperCase();
+    const o = {name, type: x.type, qty: num($$('#ivQ').value), avg: num($$('#ivA').value), price: num($$('#ivP').value), isin: /^[A-Z]{2}[A-Z0-9]{9}\d$/.test(isin) ? isin : '',
+      symbol: x.symbol || '', exch: x.exch || '', ccy: x.ccy || '', chg: x.symbol ? x.chg : null, auto: x.symbol ? $$('#ivAuto').checked : true};
+    if (!x0 || num(x0.price) !== o.price) o.updated = x.updated && x.symbol ? x.updated : today();
+    if (!isin && x.symbol && x0?.isin) { o.symbol = ''; o.exch = ''; }
+    const I = INV(); let obj;
+    if (isNew) { obj = {id: x.id, created: today(), ...o}; I.items.push(obj); } else { obj = I.items.find(y => y.id === x0.id); Object.assign(obj, o); }
+    save(); closeSheet(); renderMain(); toast(`${isNew ? 'Aggiunto' : 'Aggiornato'}: ${name}`);
+    if (after) after(obj);
   });
-  const pl = val - inv;
-  $('#iCards').innerHTML = `
-    <div class="card"><div class="lbl">Totale investito</div><div class="val">${EUR(inv)}</div></div>
-    <div class="card"><div class="lbl">Valore attuale</div><div class="val">${EUR(val)}</div></div>
-    <div class="card"><div class="lbl">Guadagno / perdita</div><div class="val ${sign(pl)}">${EUR(pl)}</div><div class="lbl ${sign(pl)}">${inv ? PCT(pl / inv * 100) : '&nbsp;'}</div></div>`;
-  const list = Object.entries(by).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
-  $('#iBars').innerHTML = list.length ? list.map(([t, v]) =>
-    `<div class="bar"><div class="row"><span>${esc(t)}</span><span>${EUR(v)} · ${Math.round(v / val * 100)}%</span></div>
-      <div class="track"><div class="fill" style="width:${v / val * 100}%;background:hsl(${hue(INV_TYPES.indexOf(t))} 55% 50%)"></div></div></div>`
-  ).join('') : '<p class="hint" style="margin:0">Inserisci quantità e prezzo attuale per vedere l\'allocazione.</p>';
+  $$('#ivDel')?.addEventListener('click', () => { const I = INV(), i = I.items.findIndex(y => y.id === x0.id); if (i < 0) return; const it = I.items[i];
+    I.items.splice(i, 1); closeSheet(); toTrash('investment', it, it.name || 'Investimento', `Investimento · ${it.type || ''}`, {i}); renderMain(); });
+  if (x.symbol) miniChart();
+  if (isNew && !matchMedia('(max-width:760px)').matches) $$('#ivIsin').focus();
+}
+
+/* piano di accumulo: stessa cifra, stesso titolo, ogni N mesi */
+function pacSheet(p0) {
+  const I = INV();
+  if (!I.items.length) { invSheet(null, it => pacSheet({item: it.id})); toast('Prima aggiungi il titolo del piano.'); return; }
+  const isNew = !p0 || !p0.id, t = today();
+  const p = {id: uid(), item: I.items[0].id, amount: 100, every: 1, day: Math.min(28, new Date().getDate() + 1), start: t, auto: true, done: [], ...(p0 || {})};
+  const sh = openSheet(`<form id="pcF" style="display:contents">
+    <div class="sh-h"><button type="button" class="more" data-x aria-label="Chiudi">${ico('x', 22)}</button><b style="flex:1;font-size:17px;text-align:center">${isNew ? 'Nuovo piano di accumulo' : 'Piano di accumulo'}</b><button class="primary" type="submit" style="margin-right:8px">${isNew ? 'Crea' : 'Salva'}</button></div>
+    <div class="sh-b apf ivf">
+      <label class="fl">Titolo<select class="field" id="pcI">${I.items.map(x => `<option value="${x.id}" ${x.id === p.item ? 'selected' : ''}>${esc(x.name || x.symbol || 'Senza nome')}${x.symbol ? ' · ' + esc(x.symbol) : ''}</option>`).join('')}<option value="__new">+ Un altro titolo…</option></select></label>
+      <div class="ivg"><label class="fl">Importo<span class="ivrow"><input class="field" id="pcA" inputmode="decimal" value="${numIn(p.amount)}" required style="font-size:20px;font-weight:600"><span class="muted">€</span></span></label>
+        <label class="fl">Ogni<select class="field" id="pcE">${PAC_EVERY.map(([v, l]) => `<option value="${v}" ${v === +p.every ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
+      <div class="ivg"><label class="fl">Giorno del mese<input class="field" id="pcD" type="number" min="1" max="31" inputmode="numeric" value="${+p.day || 1}"></label>
+        <label class="fl">A partire da<input class="field" id="pcS" type="date" value="${esc(p.start)}"></label></div>
+      <label class="ivsw"><input type="checkbox" class="sw" id="pcAuto" ${p.auto ? 'checked' : ''}><span><b>Registra da solo i versamenti</b><small class="muted" id="pcAutoT"></small></span></label>
+      ${isNew ? '' : `<label class="ivsw"><input type="checkbox" class="sw" id="pcPause" ${p.paused ? 'checked' : ''}><span><b>In pausa</b><small class="muted">Niente avvisi né versamenti finché non la togli.</small></span></label>`}
+      <p class="hint" id="pcSum" style="margin:0;border-top:1px solid var(--line);padding-top:10px"></p>
+      ${isNew ? '' : `<button type="button" class="ghost dangerbtn" id="pcDel" style="align-self:flex-start">${ico('trash', 16)}Elimina piano</button>`}
+    </div></form>`, true);
+  const $$ = s => sh.querySelector(s);
+  const sum = () => { const a = num($$('#pcA').value), e = +$$('#pcE').value, d = Math.max(1, Math.min(31, +$$('#pcD').value || 1)), auto = $$('#pcAuto').checked;
+    const it = I.items.find(x => x.id === $$('#pcI').value);
+    $$('#pcAutoT').textContent = auto ? `Ogni ${d} ${it?.symbol && FEATURES.quotes ? 'compra al prezzo di mercato del giorno' : 'usa l\'ultimo prezzo che hai scritto'}: quantità e prezzo medio si aggiornano. Puoi correggere dopo.` : 'Ti mando solo un promemoria: il versamento lo registri tu con «Registra».';
+    const nx = pacNext({start: $$('#pcS').value || t, every: e, day: d, done: []}, t);
+    $$('#pcSum').textContent = a ? `${EUR(a * 12 / e)} in un anno${nx ? ' · primo versamento ' + dayTitle(nx).replace(/^(Oggi|Domani), .*/, '$1').toLowerCase() : ''} · ti avviso il giorno prima` : ''; };
+  sh.addEventListener('input', sum); sh.addEventListener('change', sum); sum();
+  $$('#pcI').addEventListener('change', e => { if (e.target.value === '__new') { closeSheet(); invSheet(null, it => pacSheet({...p, item: it.id, amount: num($$('#pcA').value) || p.amount})); } });
+  sh.querySelector('[data-x]').onclick = closeSheet;
+  $$('#pcF').addEventListener('submit', e => {
+    e.preventDefault();
+    const a = num($$('#pcA').value); if (a <= 0) { $$('#pcA').focus(); toast('Scrivi l\'importo di ogni versamento.'); return; }
+    const o = {item: $$('#pcI').value, amount: a, every: +$$('#pcE').value, day: Math.max(1, Math.min(31, +$$('#pcD').value || 1)), start: $$('#pcS').value || t, auto: $$('#pcAuto').checked, paused: !!$$('#pcPause')?.checked};
+    let obj;
+    if (isNew) {
+      obj = {id: p.id, created: t, ...o, done: []};
+      // i versamenti già passati prima di oggi sono già dentro quantità e prezzo medio: non li ri-registro
+      obj.done = pacSchedule(obj, iso(addDays(kDate(t), -1)));
+      I.plans.push(obj);
+    } else { obj = I.plans.find(y => y.id === p.id); Object.assign(obj, o); }
+    save(); closeSheet(); renderMain(); toast(isNew ? `Piano creato: ${EUR(a)} ogni ${(PAC_EVERY.find(x => x[0] === o.every) || PAC_EVERY[0])[1]}` : 'Piano aggiornato');
+  });
+  $$('#pcDel')?.addEventListener('click', () => { const i = I.plans.findIndex(y => y.id === p.id); if (i < 0) return; const it = I.plans[i]; I.plans.splice(i, 1);
+    closeSheet(); toTrash('pac', it, 'Piano di accumulo', `${EUR(num(it.amount))} · ${(I.items.find(x => x.id === it.item) || {}).name || ''}`, {i}); renderMain(); });
+}
+/* versamento di un piano «lo registri tu» */
+function pacPaySheet(p) {
+  const I = INV(), x = I.items.find(y => y.id === p.item); if (!x) return;
+  const due = pacDue(p), d0 = due[0];
+  const sh = openSheet(`<form id="ppF" style="display:contents">
+    <div class="sh-h"><button type="button" class="more" data-x aria-label="Chiudi">${ico('x', 22)}</button><b style="flex:1;font-size:17px;text-align:center">Registra versamento</b><button class="primary" type="submit" style="margin-right:8px">Registra</button></div>
+    <div class="sh-b apf ivf"><p style="margin:0"><b>${esc(x.name)}</b> · versamento di ${esc(dayTitle(d0).toLowerCase())}${due.length > 1 ? ` <span class="muted">(ne mancano ${due.length})</span>` : ''}</p>
+      <div class="ivg"><label class="fl">Importo<input class="field" id="ppA" inputmode="decimal" value="${numIn(p.amount)}"></label><label class="fl">Prezzo pagato<input class="field" id="ppP" inputmode="decimal" value="${numIn(x.price)}"></label></div>
+      <p class="hint" id="ppQ" style="margin:0"></p>
+      <button type="button" class="ghost" id="ppSkip" style="align-self:flex-start">Questo l'ho saltato</button></div></form>`, true);
+  const $$ = s => sh.querySelector(s), upd = () => { const a = num($$('#ppA').value), pr = num($$('#ppP').value); $$('#ppQ').textContent = a && pr ? `${sharesF(a / pr)} quote` : ''; };
+  sh.addEventListener('input', upd); upd(); sh.querySelector('[data-x]').onclick = closeSheet;
+  $$('#ppF').addEventListener('submit', e => { e.preventDefault(); const a = num($$('#ppA').value), pr = num($$('#ppP').value);
+    if (!(a > 0 && pr > 0)) { toast('Servono importo e prezzo.'); return; }
+    pacRecord(p, x, d0, a, pr); save(); closeSheet(); renderMain(); toast(`Registrato: ${EUR(a)} in ${x.name}`); });
+  $$('#ppSkip').onclick = () => { p.done = [...new Set([...(p.done || []), d0])].sort(); save(); closeSheet(); renderMain(); };
 }
 function exportInvestmentsCSV() {
   const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`, n = v => String(Math.round(v * 100) / 100).replace('.', ',');
-  const lines = ['Nome;Tipo;Quantità;Prezzo medio;Prezzo attuale;Investito;Valore;Guadagno', ...state.investments.items.map(x => {
-    const c = invCalc(x); return [q(x.name), q(x.type), n(num(x.qty)), n(num(x.avg)), n(num(x.price)), n(c.inv), n(c.val), n(c.pl)].join(';');
+  const lines = ['Nome;Tipo;ISIN;Simbolo;Quantità;Prezzo medio;Prezzo attuale;Investito;Valore;Guadagno', ...INV().items.map(x => {
+    const c = invCalc(x); return [q(x.name), q(x.type), q(x.isin), q(x.symbol), n(num(x.qty)), n(num(x.avg)), n(num(x.price)), n(c.inv), n(c.val), n(c.pl)].join(';');
   })];
   download('﻿' + lines.join('\r\n'), 'investimenti.csv', 'text/csv');
 }
@@ -2546,7 +2934,7 @@ function paintSelect(el, col) {
 function renderBody() {
   const t = cur(), tb = $('#tbody'); if (!tb) return;
   tb.innerHTML = visibleRows(t).map(r =>
-    `<tr data-row="${r.id}">${t.columns.map((c, i) => cellHtml(c, r.cells[c.id], i === 0)).join('')}<td class="del"><button data-del title="Elimina riga" aria-label="Elimina riga">${ico('x', 18)}</button></td></tr>`
+    `<tr data-row="${r.id}">${t.columns.map((c, i) => cellHtml(c, r.cells[c.id], i === 0)).join('')}<td class="del"><button data-del title="Elimina riga" aria-label="Elimina riga">${ico('trash', 18)}</button></td></tr>`
   ).join('');
   tb.querySelectorAll('select').forEach(s => paintSelect(s, t.columns.find(c => c.id === s.dataset.c)));
   renderFoot();
@@ -3439,13 +3827,18 @@ function settingsSheet() {
       <button class="set-row" data-s="imp"><span class="muted">${ico('upload', 20)}</span><span class="nm">Importa backup<small>Ripristina da un file esportato</small></span></button>
       ${USER?.role === 'root' ? `<div class="glab">Server · solo root</div>
       <button class="set-row" data-s="domain"><span class="muted">${ico('globe', 20)}</span><span class="nm">Dominio<small>Indirizzi del sito e certificati HTTPS</small></span>${ico('chev', 18)}</button>
-      <button class="set-row" data-s="email"><span class="muted">${ico('mail', 20)}</span><span class="nm">Email<small>Server di posta per inviti, promemoria e password</small></span>${ico('chev', 18)}</button>` : ''}
+      <button class="set-row" data-s="email"><span class="muted">${ico('mail', 20)}</span><span class="nm">Email<small>Server di posta per inviti, promemoria e password</small></span>${ico('chev', 18)}</button>
+      <label class="set-row"><span class="muted">${ico('trend', 20)}</span><span class="nm">Prezzi di borsa automatici<small>Dal codice ISIN, con Yahoo Finance e OpenFIGI (gratuiti). Il server manda solo codici dei titoli, mai dati delle persone.</small></span><input type="checkbox" class="sw" id="setQuotes" ${FEATURES.quotes ? 'checked' : ''}></label>` : ''}
       ${USER?.role === 'root' ? `<button class="set-row" data-s="legal"><span class="muted">${ico('shield', 20)}</span><span class="nm">Dati del titolare (privacy)<small>Nome, indirizzo ed email mostrati nell'informativa</small></span>${ico('chev', 18)}</button>` : ''}
       ${USER?.role === 'root' ? `<button class="set-row" data-s="contact"><span class="muted">${ico('mail', 20)}</span><span class="nm">Messaggi dalla pagina di accesso<small>Chi riceve «Scrivi all'amministratore»</small></span>${ico('chev', 18)}</button>` : ''}
       <button class="set-row" data-s="help"><span class="muted">${ico('help', 20)}</span><span class="nm">Istruzioni<small>Come funziona Tacuìn e cosa puoi fare</small></span>${ico('chev', 18)}</button>
       ${USER ? `<button class="set-row" data-s="notif"><span class="muted">${ico('bell', 20)}</span><span class="nm">Notifiche e promemoria<small>Sul telefono, sul computer o via email</small></span>${ico('chev', 18)}</button>` : ''}
     </div>`, true);
   sh.querySelector('[data-x]').onclick = closeSheet;
+  sh.querySelector('#setQuotes')?.addEventListener('change', async e => {
+    try { const r = await api('api/admin/server/quotes', {on: e.target.checked}); FEATURES.quotes = r.quotes; e.target.checked = r.quotes;
+      toast(r.quotes ? 'Prezzi automatici accesi.' : 'Prezzi automatici spenti: i prezzi si scrivono a mano.'); }
+    catch (x) { e.target.checked = !e.target.checked; toast(x.message); } });
   sh.addEventListener('click', e => {
     const b = e.target.closest('[data-s]'); if (!b) return;
     const k = b.dataset.s; closeSheet();
@@ -4407,20 +4800,27 @@ function nthDate(base, rep, i) {
   const d = rep === 'month' ? new Date(base.getFullYear(), base.getMonth() + i, base.getDate()) : new Date(base.getFullYear() + i, base.getMonth(), base.getDate());
   return d.getDate() === base.getDate() ? d : null; // 31 in un mese corto o 29 febbraio: quella volta si salta
 }
+/* giorni in più di un appuntamento su più giorni (0 se dura un giorno) */
+const evSpan = ev => /^\d{4}-\d{2}-\d{2}$/.test(ev.until || '') && ev.until > ev.date ? Math.min(366, Math.round((kDate(ev.until) - kDate(ev.date)) / 864e5)) : 0;
 function evOcc(from, to) {
   const out = [];
   (state.calendar?.events || []).forEach(ev => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(ev.date || '')) return;
-    if (!ev.repeat) { if (ev.date >= from && ev.date <= to) out.push({ev, k: ev.date}); return; }
+    const n = evSpan(ev), from0 = n ? iso(addDays(kDate(from), -n)) : from;
+    const put = k0 => { for (let j = 0; j <= n; j++) { const k = j ? iso(addDays(kDate(k0), j)) : k0; if (k >= from && k <= to) out.push(n ? {ev, k, k0, n: j + 1, tot: n + 1} : {ev, k}); } };
+    if (!ev.repeat) { if (ev.date >= from0 && ev.date <= to) put(ev.date); return; }
     const base = kDate(ev.date);
-    for (let i = 0; i < 2500; i++) { const d = nthDate(base, ev.repeat, i); if (!d) continue; const k = iso(d); if (k > to) break; if (k >= from) out.push({ev, k}); }
+    for (let i = 0; i < 2500; i++) { const d = nthDate(base, ev.repeat, i); if (!d) continue; const k = iso(d); if (k > to) break; if (k >= from0) put(k); }
   });
   return out.sort((a, b) => a.k.localeCompare(b.k) || (a.ev.allDay ? '' : a.ev.start || '').localeCompare(b.ev.allDay ? '' : b.ev.start || ''));
 }
 const DONE_RE = /fatt|finit|complet|letto|visto|pres[oa]|consegn|chius|pagat|done/i;
 function calItems(from, to) {
   const map = {}, add = (k, it) => { if (!k || k < from || k > to || calHide.has(it.t)) return; (map[k] = map[k] || []).push(it); };
-  evOcc(from, to).forEach(({ev, k}) => add(k, {t: 'app', time: ev.allDay || !ev.start ? '' : ev.start, title: ev.title || 'Appuntamento',
+  evOcc(from, to).forEach(({ev, k, k0, n, tot}) => add(k, tot ? {t: 'app', span: 1, ts: n === 1, te: n === tot, time: n === 1 && !ev.allDay && ev.start ? ev.start : '', title: ev.title || 'Appuntamento',
+    sub: [n === 1 ? (ev.allDay || !ev.start ? `${tot} giorni` : `Inizia alle ${ev.start}`) : n === tot ? (ev.allDay || !ev.end ? 'Ultimo giorno' : `Finisce alle ${ev.end}`) : `Giorno ${n} di ${tot}`,
+      `fino a ${dayTitle(iso(addDays(kDate(k0), tot - 1))).replace(/^(Oggi|Domani|Ieri), /, '').toLowerCase()}`, ev.place].filter(Boolean).join(' · '), go: {app: ev.id, k: k0}}
+    : {t: 'app', time: ev.allDay || !ev.start ? '' : ev.start, title: ev.title || 'Appuntamento',
     sub: [ev.allDay || !ev.start ? 'Tutto il giorno' : ev.start + (ev.end ? '–' + ev.end : ''), ev.place, ev.repeat ? REPEAT_L[ev.repeat].toLowerCase() : '', (ev.people || []).length ? `con ${ev.people.map(p => p.name || p.contact).join(', ')}` : ''].filter(Boolean).join(' · '), go: {app: ev.id, k}}));
   (state.trips || []).forEach(tp => {
     if (!tp.start) return; const end = tp.end || tp.start, tot = Math.round((kDate(end) - kDate(tp.start)) / 864e5) + 1;
@@ -4460,7 +4860,7 @@ function calItems(from, to) {
     const k = iso(d); if (k > today()) break; const dn = H.filter(h => h.done[k]);
     if (dn.length) add(k, {t: 'hab', title: 'Abitudini', sub: dn.map(h => h.name).join(' · '), right: `${dn.length}/${H.length}`, go: {hab: 1}});
   }
-  Object.values(map).forEach(l => l.sort((a, b) => CAL_ORDER.indexOf(a.t) - CAL_ORDER.indexOf(b.t) || (a.time || '').localeCompare(b.time || '')));
+  Object.values(map).forEach(l => l.sort((a, b) => CAL_ORDER.indexOf(a.t) - CAL_ORDER.indexOf(b.t) || (b.span ? 1 : 0) - (a.span ? 1 : 0) || (a.time || '').localeCompare(b.time || '')));
   return map;
 }
 function calRow(it, i) {
@@ -4496,12 +4896,12 @@ function renderCalendar() {
   if (view === 'month') {
     let cells = '';
     for (let d = kDate(from); iso(d) <= to; d = addDays(d, 1)) {
-      const k = iso(d), it = map[k] || [], out = d.getMonth() !== sd.getMonth(), tr = it.find(x => x.t === 'trip');
+      const k = iso(d), it = map[k] || [], out = d.getMonth() !== sd.getMonth(), tr = it.find(x => x.t === 'trip') || it.find(x => x.span);
       const types = [...new Set(it.filter(x => x.t !== 'trip').map(x => x.t))].slice(0, 4);
-      const chips = it.slice(0, 4).map(x => x.t === 'trip'
-        ? `<span class="cchip trip t-trip ${x.ts ? 'ts' : ''} ${x.te ? 'te' : ''}">${x.ts || d.getDay() === 1 ? `${ico('plane', 12, 2)}<span>${esc(x.title)}</span>` : '&nbsp;'}</span>`
+      const chips = it.slice(0, 4).map(x => x.t === 'trip' || x.span
+        ? `<span class="cchip trip t-${x.t} ${x.span ? 'evspan' : ''} ${x.ts ? 'ts' : ''} ${x.te ? 'te' : ''}">${x.ts || d.getDay() === 1 ? `${x.span ? '' : ico('plane', 12, 2)}<span>${esc(x.title)}</span>` : '&nbsp;'}</span>`
         : `<span class="cchip t-${x.t}">${ico(x.t === 'app' ? 'clock' : CAL_T[x.t][1], 12, 2)}<span>${esc((x.t === 'app' && x.time ? x.time + ' ' : '') + (x.t === 'hab' ? 'Abitudini ' + x.right : x.title))}</span></span>`).join('');
-      cells += `<button class="cc ${out ? 'out' : ''} ${k === sel ? 'sel' : ''} ${k === t ? 'today' : ''} ${tr ? 'tripd' + (tr.ts ? ' ts' : '') + (tr.te ? ' te' : '') : ''}" data-day="${k}" aria-label="${esc(dayTitle(k))}${it.length ? ', ' + it.length + ' voci' : ''}">
+      cells += `<button class="cc ${out ? 'out' : ''} ${k === sel ? 'sel' : ''} ${k === t ? 'today' : ''} ${tr ? 'tripd' + (tr.span ? ' evd' : '') + (tr.ts ? ' ts' : '') + (tr.te ? ' te' : '') : ''}" data-day="${k}" aria-label="${esc(dayTitle(k))}${it.length ? ', ' + it.length + ' voci' : ''}">
         <span class="cn">${d.getDate()}</span><span class="cdots">${types.map(x => `<i class="t-${x}"></i>`).join('')}</span><span class="cchips">${chips}${it.length > 4 ? `<span class="cmore">+${it.length - 4} altre</span>` : ''}</span></button>`;
     }
     body = `<div class="calg"><div class="cm"><div class="cm-h">${['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'].map(x => `<span><span class="hide-m">${x}</span><span class="show-m">${x[0]}</span></span>`).join('')}</div><div class="cm-g">${cells}</div></div>
@@ -4569,8 +4969,11 @@ function apptSheet(ev, k) {
       <input class="field apt" id="apT" placeholder="Titolo, es. Dentista" value="${esc(e.title)}" required maxlength="120" autocomplete="off">
       <div class="apcard">
         <label class="aprow"><span class="muted">${ico('clock', 20)}</span><span class="l">Tutto il giorno</span><input type="checkbox" class="sw" id="apAll" ${e.allDay ? 'checked' : ''}></label>
-        <label class="aprow"><span class="muted">${ico('cal', 20)}</span><span class="l">Giorno</span><input type="date" class="field" id="apD" value="${esc(e.date)}" required></label>
-        <div class="aprow" id="apTimes" ${e.allDay ? 'hidden' : ''}><span class="muted">${ico('timer', 20)}</span><span class="l">Ora</span><input type="time" class="field" id="apS" value="${esc(e.start || '')}" aria-label="Inizio"><span class="muted">→</span><input type="time" class="field" id="apE" value="${esc(e.end || '')}" aria-label="Fine"></div>
+        <label class="aprow"><span class="muted">${ico('cal', 20)}</span><span class="l">Più giorni</span><input type="checkbox" class="sw" id="apMulti" ${e.until ? 'checked' : ''}></label>
+        <label class="aprow"><span class="muted"></span><span class="l" id="apDL">${e.until ? 'Dal' : 'Giorno'}</span><input type="date" class="field" id="apD" value="${esc(e.date)}" required></label>
+        <label class="aprow" id="apURow" ${e.until ? '' : 'hidden'}><span class="muted"></span><span class="l">Al</span><input type="date" class="field" id="apU" value="${esc(e.until || '')}"></label>
+        <p class="hint" id="apUH" style="margin:0;padding:0 14px 10px" ${e.until ? '' : 'hidden'}></p>
+        <div class="aprow" id="apTimes" ${e.allDay ? 'hidden' : ''}><span class="muted">${ico('timer', 20)}</span><span class="l" id="apTL">${e.until ? 'Partenza → rientro' : 'Ora'}</span><input type="time" class="field" id="apS" value="${esc(e.start || '')}" aria-label="Inizio"><span class="muted">→</span><input type="time" class="field" id="apE" value="${esc(e.end || '')}" aria-label="Fine"></div>
       </div>
       <div class="apcard">
         <label class="aprow"><span class="muted">${ico('pin', 20)}</span><input class="field flat" id="apP" placeholder="Luogo (facoltativo)" value="${esc(e.place || '')}"></label>
@@ -4608,7 +5011,20 @@ function apptSheet(ev, k) {
   sh.querySelector('#apPL').onclick = x => { const b = x.target.closest('[data-pdel]'); if (b) { ppl.splice(+b.dataset.pdel, 1); drawP(); } };
   sh.querySelector('[data-x]').onclick = closeSheet;
   sh.querySelector('#apAll').onchange = x => { sh.querySelector('#apTimes').hidden = x.target.checked; };
-  sh.querySelector('#apS').onchange = x => { const en = sh.querySelector('#apE'); if (!en.value || en.value <= x.target.value) en.value = plusHour(x.target.value); };
+  const multi = () => sh.querySelector('#apMulti').checked;
+  const spanHint = () => { const a = sh.querySelector('#apD').value, b = sh.querySelector('#apU').value, h = sh.querySelector('#apUH');
+    if (!multi()) { h.hidden = true; return; } h.hidden = false;
+    const n = a && b && b > a ? Math.round((kDate(b) - kDate(a)) / 864e5) + 1 : 0;
+    h.textContent = n ? `${n} giorni · compare su ogni giorno, il promemoria arriva solo all'inizio` : 'Scegli l\'ultimo giorno (dopo il primo).'; };
+  sh.querySelector('#apMulti').onchange = () => { const on = multi(), u = sh.querySelector('#apU'), d = sh.querySelector('#apD');
+    sh.querySelector('#apURow').hidden = !on; sh.querySelector('#apDL').textContent = on ? 'Dal' : 'Giorno'; sh.querySelector('#apTL').textContent = on ? 'Partenza → rientro' : 'Ora';
+    if (on && (!u.value || u.value <= d.value) && d.value) u.value = iso(addDays(kDate(d.value), 2));
+    spanHint(); };
+  sh.querySelector('#apD').addEventListener('change', () => { const u = sh.querySelector('#apU'), d = sh.querySelector('#apD');
+    if (multi() && d.value && u.value && u.value <= d.value) u.value = iso(addDays(kDate(d.value), 1)); spanHint(); });
+  sh.querySelector('#apU').addEventListener('change', spanHint);
+  spanHint();
+  sh.querySelector('#apS').onchange = x => { if (multi()) return; const en = sh.querySelector('#apE'); if (!en.value || en.value <= x.target.value) en.value = plusHour(x.target.value); };
   sh.querySelector('#apM').onclick = x => { const b = x.target.closest('[data-m]'); if (!b) return; remind = b.dataset.m; sh.querySelectorAll('#apM button').forEach(y => y.classList.toggle('on', y === b)); };
   sh.querySelector('#apF').addEventListener('submit', x => {
     x.preventDefault();
@@ -4618,11 +5034,13 @@ function apptSheet(ev, k) {
     const title = sh.querySelector('#apT').value.trim(), date = sh.querySelector('#apD').value, all = sh.querySelector('#apAll').checked;
     if (!title) { sh.querySelector('#apT').focus(); return; }
     if (!date) { sh.querySelector('#apD').focus(); return; }
+    const until = multi() ? sh.querySelector('#apU').value : '';
+    if (multi() && !(until > date)) { toast('L\'ultimo giorno deve venire dopo il primo.'); sh.querySelector('#apU').focus(); return; }
     const start = all ? '' : sh.querySelector('#apS').value, end0 = all ? '' : sh.querySelector('#apE').value;
-    const o = {title, date, allDay: all || !start, start, end: start ? (end0 && end0 > start ? end0 : plusHour(start)) : '', place: sh.querySelector('#apP').value.trim(),
+    const o = {title, date, until, allDay: all || !start, start, end: start ? (until ? end0 : end0 && end0 > start ? end0 : plusHour(start)) : '', place: sh.querySelector('#apP').value.trim(),
       notes: sh.querySelector('#apN').value.trim(), repeat: sh.querySelector('#apR').value, remind: (all || !start) && /^\d+$/.test(remind) && remind !== '1440' ? 'morning' : remind};
     o.people = ppl; o.invite = sh.querySelector('#apInv').checked; o.notifyPeople = sh.querySelector('#apNP').checked; o.notifyChanges = sh.querySelector('#apNC').checked;
-    const changed = !isNew && ['title', 'date', 'start', 'end', 'place', 'allDay'].some(k => String(ev[k] ?? '') !== String(o[k] ?? ''));
+    const changed = !isNew && ['title', 'date', 'until', 'start', 'end', 'place', 'allDay'].some(k => String(ev[k] ?? '') !== String(o[k] ?? ''));
     let obj;
     if (isNew) { obj = {id: uid(), created: today(), seq: 0, ...o}; state.calendar.events.push(obj); }
     else { obj = state.calendar.events.find(y => y.id === ev.id) || {}; Object.assign(obj, o); if (changed) obj.seq = (obj.seq || 0) + 1; }
@@ -4635,16 +5053,16 @@ function apptSheet(ev, k) {
         if (changed && o.notifyChanges && old.length) setTimeout(() => notifyPeople({...obj, people: old}, 'update'), fresh.length ? 2500 : 0);
       }, 600);
     }
-    toast(`${isNew ? 'Aggiunto' : 'Aggiornato'}: ${title} · ${dayTitle(date).replace(/^(Oggi|Domani|Ieri), /, '$1, ')}${o.start ? ' alle ' + o.start : ''}`);
+    toast(`${isNew ? 'Aggiunto' : 'Aggiornato'}: ${title} · ${dayTitle(date).replace(/^(Oggi|Domani|Ieri), /, '$1, ')}${o.start ? ' alle ' + o.start : ''}${until ? ' · ' + (Math.round((kDate(until) - kDate(date)) / 864e5) + 1) + ' giorni' : ''}`);
   });
   sh.querySelector('#apDel')?.addEventListener('click', () => { closeSheet(); deleteEvent(ev); });
   if (isNew && !matchMedia('(max-width:760px)').matches) sh.querySelector('#apT').focus();
 }
 function calPanel() {
   const t = today(), occ = evOcc(t, iso(addDays(new Date(), 14)));
-  const tod = occ.filter(o => o.k === t), next = occ.filter(o => o.k > t).slice(0, 3);
+  const tod = occ.filter(o => o.k === t), next = occ.filter(o => o.k > t && (!o.n || o.n === 1)).slice(0, 3);
   const line = o => `<button data-app="${o.ev.id}" data-k="${o.k}" ${swipeAttrs('app', o.ev.id, o.k)}><span class="dot t-app tt" style="border:0">${ico('clock', 13, 2)}</span><span class="nm">${esc(o.ev.title)}</span>
-    <span class="r">${o.k === t ? '' : esc(dayTitle(o.k).split(',')[0].replace(/ \d{4}$/, '')) + ' · '}${o.ev.allDay || !o.ev.start ? 'tutto il giorno' : esc(o.ev.start)}</span>${rowActsHTML('app', o.ev.id, o.k)}</button>`;
+    <span class="r">${o.k === t ? '' : esc(dayTitle(o.k).split(',')[0].replace(/ \d{4}$/, '')) + ' · '}${o.tot ? `giorno ${o.n} di ${o.tot}` : o.ev.allDay || !o.ev.start ? 'tutto il giorno' : esc(o.ev.start)}</span>${rowActsHTML('app', o.ev.id, o.k)}</button>`;
   return `<section class="panel"><div class="panel-h"><h2>${ico(secIcon('calendar', 'cal'), 18)} Oggi</h2><button data-go="calendar">Calendario →</button></div>
     <div class="dl">${tod.length ? tod.map(line).join('') : '<p class="muted" style="margin:0">Nessun appuntamento oggi.</p>'}</div>
     ${next.length ? `<div class="muted" style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Prossimi</div><div class="dl">${next.map(line).join('')}</div>` : ''}
@@ -4979,8 +5397,10 @@ const HELP = {
     ['Categorie', '«Categorie» apre l\'elenco: aggiungi con +, rinomina scrivendo sul nome (le spese si aggiornano), riordina trascinando.'],
     ['Spese condivise', 'Nella scheda «Condivise» aggiungi le persone e dividi le spese; vedi chi deve quanto e registri i saldi.']]],
   investments: ['Investimenti', [
-    ['Aggiungi un investimento', 'Nome, tipo, quantità, prezzo medio di carico e prezzo attuale: Tacuìn calcola valore, guadagno e allocazione.'],
-    ['Prezzi', 'I prezzi si aggiornano a mano: Tacuìn non si collega ai mercati. Per conti deposito usa quantità 1 e scrivi il saldo come prezzo.']]],
+    ['Aggiungi un investimento', 'Scrivi il codice ISIN (lo trovi nell\'app della banca): Tacuìn trova nome, tipo e prezzo. Tu aggiungi quantità e prezzo medio di carico.'],
+    ['Prezzi', 'Per i titoli con ISIN il prezzo si aggiorna da solo (se l\'amministratore ha acceso i prezzi automatici); per gli altri lo scrivi tu. Per conti deposito usa quantità 1 e scrivi il saldo come prezzo.'],
+    ['Piani di accumulo', '«Nuovo piano di accumulo»: importo, ogni quanti mesi e il giorno. Ti avviso il giorno prima e, se vuoi, il versamento si registra da solo aggiornando quantità e prezzo medio.'],
+    ['Grafico', 'Tacuìn segna ogni giorno valore e versato. Per i giorni prima, con l\'ISIN dei titoli, il grafico mostra una stima con le quantità di oggi.']]],
   trips: ['Viaggi', [
     ['Nuovo viaggio', 'Scegli la destinazione e le date: vedi il meteo, la mappa e il conto alla rovescia.'],
     ['Luoghi e cose da portare', 'Aggiungi i luoghi da vedere (anche toccando la mappa) e una lista di cose da non dimenticare.'],
@@ -5033,7 +5453,7 @@ const TIPS = {
   gym: ['gym-1', 'Come si usa', 'Tocca un allenamento per aprirlo. Con ⋯ o scorrendo a sinistra lo rinomini, lo ripeti o lo elimini.', 'bulb'],
   calendar: ['cal-1', 'Come si usa', 'Tocca un giorno per vedere cosa c\'è. Tocca un appuntamento per aprirlo; con ⋯ o scorrendo a sinistra lo duplichi o lo elimini.', 'bulb'],
   expenses: ['exp-1', 'Fai prima a scriverlo', 'Scrivi «12,50 pizza» nella barra «Scrivi o chiedi…», oppure usa «Scansiona scontrino» con una foto.', 'spark'],
-  investments: ['inv-1', 'Prezzi aggiornati a mano', 'Tacuìn non si collega ai mercati: aggiorna tu il prezzo attuale. Per conti deposito o liquidità usa quantità 1 e scrivi il saldo come prezzo.', 'bulb'],
+  investments: ['inv-2', 'Basta il codice ISIN', 'Con l\'ISIN Tacuìn trova il titolo e ne aggiorna il prezzo da solo. Per conti deposito o liquidità usa quantità 1 e scrivi il saldo come prezzo.', 'bulb'],
   journal: ['jou-1', 'Il diario è tuo', 'Lo leggi solo tu. Evita comunque di scrivere dati sulla salute tua o di altre persone se non ti servono davvero.', 'lock'],
   trips: ['trip-1', 'Come si usa', 'Tocca un viaggio per meteo, mappa e luoghi da vedere. Con ⋯ lo modifichi o lo elimini.', 'bulb'],
   tracker: ['tr-1', 'Come si usa', 'Tocca il nome di una colonna per rinominarla o cambiarne il tipo; «Colonne» ne aggiunge una nuova. Le opzioni di un elenco si scrivono una per riga con il tasto +.', 'bulb'],
@@ -5282,7 +5702,7 @@ async function notifyPeople(ev, kind) {
 /* Quello che elimini resta qui 30 giorni: si ripristina dov'era, o si elimina per sempre. */
 const TRASH_K = {tracker: ['table', 'Progetto', 1, 'due'], trip: ['plane', 'Viaggio', 1, 'trip'], habit: ['habit', 'Abitudine', 1, 'hab'], course: ['class', 'Corso', 1, 'gym'],
   template: ['list', 'Scheda', 1, 'gym'], row: ['check', 'Voce di progetto', 0, 'due'], expense: ['wallet', 'Spesa', 0, 'exp'], shared: ['users', 'Spesa condivisa', 0, 'exp'],
-  settle: ['swap', 'Saldo', 0, 'exp'], investment: ['trend', 'Investimento', 0, ''], event: ['cal', 'Appuntamento', 0, 'app'], session: ['gym', 'Allenamento', 0, 'gym'],
+  settle: ['swap', 'Saldo', 0, 'exp'], investment: ['trend', 'Investimento', 0, ''], pac: ['trend', 'Piano di accumulo', 0, ''], event: ['cal', 'Appuntamento', 0, 'app'], session: ['gym', 'Allenamento', 0, 'gym'],
   todo: ['check', 'Da fare', 0, 'todo'], journal: ['journal', 'Diario', 0, 'jou']};
 function toTrash(kind, data, label, sub, meta, quiet) {
   const e = {id: uid(), kind, at: Date.now(), label: String(label || 'Senza titolo').slice(0, 120), sub: String(sub || '').slice(0, 160), data: JSON.parse(JSON.stringify(data)), meta: meta || {}};
@@ -5301,6 +5721,7 @@ function restoreTrash(id) {
     case 'shared': at(SH().items, m.i, d); if (m.linked) at(state.expenses.items, m.li, m.linked); break;
     case 'settle': at(SH().settlements, m.i, d); break;
     case 'investment': at(state.investments.items, m.i, d); break;
+    case 'pac': at(INV().plans, m.i, d); break;
     case 'habit': at(state.habits.list, m.i, d); break;
     case 'trip': at(state.trips, m.i, d); break;
     case 'event': at(state.calendar.events, m.i, d); break;

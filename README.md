@@ -257,6 +257,12 @@ Dall'assistente: **diario: oggi giornata lenta e bella** aggiunge il testo alla 
 
 ## Cestino
 
+### Investimenti e piani di accumulo
+
+Scrivi il **codice ISIN** di un titolo (azioni, ETF, fondi): Tacuìn trova nome, tipo e borse dove è quotato e ne aggiorna il **prezzo da solo**, convertito in euro. Le fonti sono gratuite e senza chiave: **Yahoo Finance** e, come riserva per trovare il simbolo, **OpenFIGI**. Il server manda solo ISIN e simboli, mai dati delle persone; le risposte restano in cache (prezzi 15 minuti, corrispondenze ISIN 30 giorni). Yahoo non è un servizio ufficiale: se smette di rispondere i prezzi restano quelli scritti a mano. Il root li spegne da **Impostazioni → Prezzi di borsa automatici** (o con `QUOTES=off` nel file `.env`).
+
+La pagina mostra valore, versato e guadagno, il grafico dell'andamento (Tacuìn segna valore e versato ogni giorno; per i giorni prima stima il valore con le quantità di oggi), l'allocazione per tipo e i titoli filtrabili (ETF, azioni, obbligazioni, fondi, liquidità, crypto). Un **piano di accumulo** investe la stessa cifra ogni 1, 2, 3, 6 o 12 mesi: ti avvisa il giorno prima e, se vuoi, alle 7 del giorno stabilito registra da solo il versamento aggiornando quantità e prezzo medio.
+
 Quello che elimini (progetti, voci, spese, saldi, investimenti, abitudini, viaggi, appuntamenti, allenamenti, corsi, schede, cose da fare, pagine del diario) va nel **Cestino** e resta lì **30 giorni**, poi sparisce da solo. Subito dopo l'eliminazione compare «Annulla»; dal Cestino puoi **ripristinare** nel punto dov'era, **eliminare per sempre** o **svuotare** tutto. Anche quello che elimini dall'assistente finisce lì. Sugli **allenamenti, appuntamenti e viaggi** le azioni sono sempre a vista: **⋯** a destra di ogni riga, sul telefono **scorri a sinistra** (Modifica / Elimina) o **tieni premuto**, sul computer passando sopra la riga compaiono le icone.
 
 ## Partecipanti agli appuntamenti e inviti

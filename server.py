@@ -266,6 +266,11 @@ def migrate(st):
     for k in ("people", "items", "settlements"):
         sh.setdefault(k, [])
     st["investments"].setdefault("items", [])
+    for k in ("plans", "log"):
+        if not isinstance(st["investments"].get(k), list):
+            st["investments"][k] = []
+    if not isinstance(st["investments"].get("hist"), dict):
+        st["investments"]["hist"] = {}
     if not isinstance(st.get("trips"), list):
         st["trips"] = []
     gym = st.get("gym") if isinstance(st.get("gym"), dict) else {}
@@ -302,6 +307,8 @@ import webpush  # noqa: E402
 import legal  # noqa: E402
 from iam import DB, IAM, Store, CURRENT_USER, ROLE_LABEL, TotpNeeded, check_password  # noqa: E402
 import brain  # noqa: E402
+import invest  # noqa: E402
+import quotes as quotes_mod  # noqa: E402
 import notify  # noqa: E402
 import travel  # noqa: E402
 import agenda  # noqa: E402
@@ -690,6 +697,7 @@ RL_CONTACT_ALL = RateLimit(60, 3600)    # in tutto, all'ora (contro chi cambia I
 RL_RESET = RateLimit(20, 3600)          # tentativi di link di reset per IP all'ora
 RL_PUSH = RateLimit(30, 3600)           # iscrizioni alle notifiche per utente all'ora
 RL_TILES = RateLimit(3000, 600)         # tessere della mappa per utente ogni 10 minuti (navigare normalmente ne usa poche centinaia)
+RL_QUOTES = RateLimit(120, 600)        # richieste di prezzi di borsa per utente ogni 10 minuti
 RL_TOTP = RateLimit(6, 900)             # codici di verifica sbagliati per utente ogni 15 minuti
 ANON_BODY_MAX = 64 * 1024               # senza accesso il corpo di una richiesta non può superare 64 KB
 
@@ -928,7 +936,19 @@ class Handler(BaseHTTPRequestHandler):
         self._json(200, {"smtp": smtp, "source": mailer.source, "configured": mailer.configured,
                          "last_ok": mailer.last_ok, "error": mask_emails(mailer.last_error),
                          "domains": [{"name": d, "primary": d == prim, "env": d == env_domain()} for d in all_domains()],
-                         "ips": sorted(server_ips())})
+                         "ips": sorted(server_ips()), "quotes": quotes_on(), "quotes_env_off": QUOTES_ENV_OFF})
+
+    def POST_api_admin_server_quotes(self, url):
+        """Prezzi di borsa automatici (Yahoo Finance / OpenFIGI): acceso o spento per tutto il server."""
+        u = self.current(admin=True)
+        if u["role"] != "root":
+            raise HTTPError(403, "Solo il root.")
+        if not RL_SERVERCONF.hit(u["id"]):
+            raise HTTPError(429, "Troppe modifiche: riprova tra qualche minuto.")
+        on = bool(self.body().get("on"))
+        conf = server_conf(); conf["quotes"] = on; save_server_conf(conf)
+        iam.audit(u["id"], "admin.server.quotes", u["id"], "acceso" if on else "spento")
+        self._json(200, {"ok": True, "quotes": quotes_on()})
 
     def POST_api_admin_server_email(self, url):
         u, b = self._root_with_password()
@@ -1107,7 +1127,7 @@ class Handler(BaseHTTPRequestHandler):
         u = iam.session_user(self.cookie_token())
         setup = iam.count() == 0
         self._json(200, {"setup": setup, "setup_here": setup and self.is_local(),
-                         "user": user_payload(u) if u else None, "features": {"vision": bool(u) and vision_ok()},
+                         "user": user_payload(u) if u else None, "features": {"vision": bool(u) and vision_ok(), "quotes": bool(u) and quotes_on()},
                          "legal": legal.VERSION, "source": SOURCE_URL})
 
     # --- accesso
@@ -1244,6 +1264,50 @@ class Handler(BaseHTTPRequestHandler):
                   "La password del tuo account è appena stata cambiata con un link di reimpostazione. "
                   "Se non sei stato tu, avvisa subito l'amministratore.")
         self._json(200, {"ok": True, "message": "Password aggiornata: ora puoi accedere."})
+
+    # --- prezzi di borsa (ISIN → simbolo → prezzo)
+    def GET_api_quotes_isin(self, url):
+        _need_quotes(self)
+        isin = urllib.parse.parse_qs(url.query).get("isin", [""])[0].strip().upper().replace(" ", "")
+        if not quotes_mod.isin_ok(isin):
+            raise HTTPError(400, "Codice ISIN non valido: controlla lettere e cifre (12 caratteri, es. IE00BK5BQT80).")
+        try:
+            cands = QUOTES.lookup(isin)
+        except quotes_mod.QuoteError as e:
+            raise HTTPError(502, f"Non riesco a cercare l'ISIN: {e}.")
+        if not cands:
+            return self._json(200, {"isin": isin, "candidates": [], "quote": None})
+        best = None
+        for c in cands[:3]:  # il primo simbolo con un prezzo
+            try:
+                best = QUOTES.quote(c["symbol"])
+                break
+            except quotes_mod.QuoteError:
+                continue
+        self._json(200, {"isin": isin, "candidates": cands, "quote": best})
+
+    def GET_api_quotes(self, url):
+        _need_quotes(self)
+        out, err = {}, {}
+        for s_ in _symbols(url):
+            try:
+                out[s_] = QUOTES.quote(s_)
+            except quotes_mod.QuoteError as e:
+                err[s_] = str(e)
+        self._json(200, {"quotes": out, "errors": err})
+
+    def GET_api_quotes_history(self, url):
+        _need_quotes(self)
+        rng = urllib.parse.parse_qs(url.query).get("range", ["1y"])[0]
+        if rng not in quotes_mod.RANGES:
+            raise HTTPError(400, "periodo non valido")
+        out = {}
+        for s_ in _symbols(url, 25):
+            try:
+                out[s_] = QUOTES.history(s_, rng)
+            except quotes_mod.QuoteError:
+                continue
+        self._json(200, {"series": out})
 
     # --- dati personali
     def GET_api_state(self, url):
@@ -3314,7 +3378,7 @@ def event_line(ev, d=None):
 
 
 def events_on(st, d):
-    return [ev for ev, _ in agenda.expand(st.get("calendar", {}).get("events", []), d, d)]
+    return [ev for ev, _ in agenda.expand(st.get("calendar", {}).get("events", []), d, d, span=True)]
 
 
 def appointment_add(text, chat):
@@ -3624,9 +3688,10 @@ def ics_event(ev, method="REQUEST", organizer=None):
              f"UID:{ev['id']}@tracker", f"DTSTAMP:{datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')}", f"SEQUENCE:{int(ev.get('seq') or 0)}"]
     if ev.get("allDay") or not ev.get("start"):
         d0 = date.fromisoformat(ev["date"])
-        lines += [f"DTSTART;VALUE=DATE:{ev['date'].replace('-', '')}", f"DTEND;VALUE=DATE:{iso(d0 + timedelta(days=1)).replace('-', '')}"]
+        last = date.fromisoformat(ev["until"]) if ev.get("until") else d0
+        lines += [f"DTSTART;VALUE=DATE:{ev['date'].replace('-', '')}", f"DTEND;VALUE=DATE:{iso(last + timedelta(days=1)).replace('-', '')}"]
     else:
-        lines += [f"DTSTART:{dt(ev['date'], ev['start'])}", f"DTEND:{dt(ev['date'], ev.get('end') or ev['start'])}"]
+        lines += [f"DTSTART:{dt(ev['date'], ev['start'])}", f"DTEND:{dt(ev.get('until') or ev['date'], ev.get('end') or ev['start'])}"]
     rr = {"week": "WEEKLY", "month": "MONTHLY", "year": "YEARLY"}.get(ev.get("repeat") or "")
     if rr:
         lines.append(f"RRULE:FREQ={rr}")
@@ -3762,6 +3827,11 @@ def clean_event(ev):
            "seq": int(num(ev.get("seq"))) if str(ev.get("seq") or "").isdigit() else 0}
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", out["date"]):
         raise HTTPError(400, "data non valida")
+    u_ = str(ev.get("until") or "")
+    if u_:
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", u_) or not out["date"] < u_ or agenda.span_days({"date": out["date"], "until": u_}) > 365:
+            raise HTTPError(400, "data di fine non valida")
+        out["until"] = u_
     for k in ("start", "end"):
         v = ev.get(k) or ""
         if v and not (isinstance(v, str) and HHMM.fullmatch(v)):
@@ -3774,6 +3844,11 @@ def clean_event(ev):
 
 def ev_when(ev):
     d = date.fromisoformat(ev["date"])
+    if ev.get("until"):
+        e = date.fromisoformat(ev["until"])
+        a = day_name(d) + (f", {ev['start']}" if ev.get("start") and not ev.get("allDay") else "")
+        b = day_name(e) + (f", {ev['end']}" if ev.get("end") and not ev.get("allDay") else "")
+        return f"da {a} a {b}"
     if ev.get("allDay") or not ev.get("start"):
         return day_name(d) + " · tutto il giorno"
     return day_name(d) + f", {ev['start']}" + (f"–{ev['end']}" if ev.get("end") else "")
@@ -3783,10 +3858,10 @@ def cal_links(ev, tok):
     """Pulsanti «aggiungi al calendario» per chi non usa Tacuìn: Google, Outlook e file .ics (Apple e tutti gli altri)."""
     title, d = ev.get("title") or "Appuntamento", ev["date"]
     if ev.get("allDay") or not ev.get("start"):
-        d1 = (date.fromisoformat(d) + timedelta(days=1)).isoformat()
+        d1 = (date.fromisoformat(ev.get("until") or d) + timedelta(days=1)).isoformat()
         g_dates, o = f"{d.replace('-', '')}/{d1.replace('-', '')}", {"startdt": d, "enddt": d1, "allday": "true"}
     else:
-        st, en = f"{d}T{ev['start']}:00", f"{d}T{ev.get('end') or ev['start']}:00"
+        st, en = f"{d}T{ev['start']}:00", f"{ev.get('until') or d}T{ev.get('end') or ev['start']}:00"
         g_dates = f"{st.replace('-', '').replace(':', '')}/{en.replace('-', '').replace(':', '')}"
         o = {"startdt": st, "enddt": en, "allday": "false"}
     q = urllib.parse.urlencode
@@ -4064,9 +4139,131 @@ def garmin_auto(now):
             iam.set_settings(u["id"], {"_garmin": {**cfg, "last_sync": int(time.time()), "error": str(e)[:200]}})
 
 
+# ---------------------------------------------------------------- prezzi di borsa e piani di accumulo
+QUOTES_ENV_OFF = (os.getenv("QUOTES") or "").strip().lower() in ("off", "0", "no", "false")
+QUOTES = quotes_mod.Quotes(DATA_DIR / "quotes-cache.json")
+
+
+def quotes_on():
+    return not QUOTES_ENV_OFF and server_conf().get("quotes", True) is not False
+
+
+def _need_quotes(handler):
+    u = handler.current()
+    if not quotes_on():
+        raise HTTPError(503, "I prezzi automatici sono spenti su questo server: scrivi il prezzo a mano.")
+    if not RL_QUOTES.hit(u["id"]):
+        raise HTTPError(429, "Troppe richieste di prezzi: riprova tra qualche minuto.")
+    return u
+
+
+def _symbols(url, cap=40):
+    raw = urllib.parse.parse_qs(url.query).get("s", [""])[0]
+    out = []
+    for x in raw.split(","):
+        x = x.strip()
+        if x and quotes_mod.SYMBOL_RE.fullmatch(x) and x not in out:
+            out.append(x)
+    if not out:
+        raise HTTPError(400, "simbolo mancante")
+    return out[:cap]
+
+
+def refresh_prices(items):
+    """Prezzi aggiornati per i titoli con un simbolo e «prezzo dal mercato» acceso. → {id: quote}"""
+    got = {}
+    for x in items:
+        sym = x.get("symbol")
+        if not sym or x.get("auto") is False:
+            continue
+        try:
+            got[x["id"]] = QUOTES.quote(sym)
+        except quotes_mod.QuoteError:
+            continue
+    return got
+
+
+def apply_prices(items, got):
+    for x in items:
+        q = got.get(x.get("id"))
+        if q and q.get("price"):
+            x["price"] = round(q["price"], 4)
+            x["chg"] = q.get("chg")
+            x["updated"] = iso(today())
+            x["qat"] = q.get("at")
+
+
+def invest_daily(now):
+    """Una volta al giorno (dalle 7): prezzi aggiornati, versamenti automatici dei PAC, foto del valore per il grafico,
+    avvisi del giorno prima. Un errore con un utente non ferma gli altri."""
+    if now.hour < 7 or now.minute % 10:
+        return
+    day = iso(now.date())
+    for u in db.q("SELECT * FROM users WHERE status='active'"):
+        u = dict(u)
+        if db.one("SELECT 1 FROM reminder_log WHERE user_id=? AND kind='inv' AND day=?", (u["id"], day)):
+            continue
+        db.run("INSERT OR IGNORE INTO reminder_log(user_id, kind, day) VALUES(?,?,?)", (u["id"], "inv", day))
+        try:
+            _invest_daily_user(u, now.date())
+        except Exception:
+            log.exception("Investimenti del giorno: errore per un utente (gli altri proseguono)")
+        finally:
+            CURRENT_USER.set(None)
+
+
+def _invest_daily_user(u, d):
+    CURRENT_USER.set(u["id"])
+    st = store.read()
+    I = st.get("investments") or {}
+    if not I.get("items"):
+        return
+    got = refresh_prices(I["items"]) if quotes_on() else {}
+
+    def fn(st):
+        inv = st["investments"]
+        apply_prices(inv["items"], got)
+        done = invest.run_plans(inv, d)
+        invest.snapshot(inv, d)
+        names = {x["id"]: x.get("name") or x.get("symbol") or "titolo" for x in inv["items"]}
+        tomorrow, today_manual = [], []
+        for p in inv.get("plans") or []:
+            if p.get("paused") or p.get("item") not in names:
+                continue
+            nd = invest.next_date(p, d)
+            if nd == d + timedelta(days=1):
+                tomorrow.append((names[p["item"]], invest.num(p.get("amount")), p.get("auto")))
+            if not p.get("auto") and nd == d:
+                today_manual.append((names[p["item"]], invest.num(p.get("amount"))))
+        return [(names.get(it["id"]), q, pr, p.get("amount")) for p, it, _d, q, pr in done], tomorrow, today_manual
+    done, tomorrow, manual = store.mutate(fn)
+    lines = [f"Registrato: {eur(a)} in {n} ({fmt_n(q)} quote a {eur(pr)})" for n, q, pr, a in done]
+    lines += [f"Domani: {eur(a)} in {n}" + ("" if auto else " (da registrare tu)") for n, a, auto in tomorrow]
+    lines += [f"Oggi: {eur(a)} in {n}, registralo quando hai comprato" for n, a in manual]
+    if not lines:
+        return
+    subj = "Piano di accumulo" if len(lines) == 1 else f"Piani di accumulo: {len(lines)} novità"
+    body = " · ".join(lines)
+    if not push_user(u, subj, body, "/#/investimenti", tag="pac" + iso(d)):
+        if mailer.configured:
+            email_user(u, subj, "".join(f"<p style=\"margin:0 0 6px\">{esc(x)}</p>" for x in lines), "Apri gli investimenti",
+                       f"{app_url()}/#/investimenti")
+
+
+def eur(v):
+    s = f"{invest.num(v):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    return s + " €"
+
+
+def fmt_n(v):
+    return (f"{v:.4f}".rstrip("0").rstrip(".")).replace(".", ",")
+
+
+
 def every_minute(now):
     event_reminders(now)
     garmin_auto(now)
+    invest_daily(now)
 
 
 # ---------------------------------------------------------------- scontrini (servizio vision)

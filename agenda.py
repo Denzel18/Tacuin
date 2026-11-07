@@ -238,8 +238,30 @@ def _nth(base, rep, i):
     return None
 
 
-def expand(events, start, end):
-    """Occorrenze tra start ed end (date incluse): lista di (evento, data) ordinata per data e ora."""
+def span_days(ev):
+    """Giorni in più oltre al primo per un appuntamento su più giorni (0 se dura un giorno)."""
+    try:
+        n = (date.fromisoformat(ev.get("until") or "") - date.fromisoformat(ev.get("date") or "")).days
+    except ValueError:
+        return 0
+    return max(0, min(n, 366))
+
+
+def expand(events, start, end, span=False):
+    """Occorrenze tra start ed end (date incluse): lista di (evento, data) ordinata per data e ora.
+    span=True: gli appuntamenti su più giorni compaiono in ognuno dei loro giorni (per agenda e riepiloghi);
+    altrimenti solo nel primo (per gli avvisi, che arrivano una volta sola)."""
+    if span:
+        out = []
+        for ev in events or []:
+            n = span_days(ev)
+            for e, d in expand([ev], start - timedelta(days=n), end):
+                for k in range(n + 1):
+                    dd = d + timedelta(days=k)
+                    if start <= dd <= end:
+                        out.append((e, dd))
+        out.sort(key=lambda x: (x[1], "" if x[0].get("allDay") else str(x[0].get("start") or "")))
+        return out
     out = []
     for ev in events or []:
         try:
