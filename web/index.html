@@ -3000,7 +3000,7 @@ function renderNutrition() {
   m.innerHTML = `
     <div class="head">${hIcon('food')}<h1 class="title">Alimentazione</h1></div>
     <div class="toolbar"><button class="primary" id="nuAdd">${ico('plus', 18, 2.2)}Alimento</button><button id="nuMeals">Pasti salvati</button></div>
-    <div class="tabs nutabs" role="tablist"><button data-nt="day" class="on" role="tab" aria-selected="true">Diario</button><button data-nt="week" role="tab" aria-selected="false">Settimana</button><button class="nuset" id="nuSet" aria-label="Impostazioni dell'alimentazione">${ico('cog', 18)}<span class="hide-m">Impostazioni</span></button></div>
+    <div class="tabs nutabs" role="tablist"><button data-nt="day" class="on" role="tab" aria-selected="true">Diario</button><button data-nt="week" role="tab" aria-selected="false">Settimana</button><button class="nuset" id="nuSet" aria-label="Impostazioni dell'alimentazione">${ico('cog', 18)}<span>Impostazioni</span></button></div>
     <div class="nu">
       <div class="nudate"><button id="nuPrev" aria-label="Giorno prima">${ico('chevl', 20)}</button><div><b>${esc(k === t ? 'Oggi' : dayTitle(k).split(',')[0])}</b><small>${esc(kDate(k).toLocaleDateString('it-IT', {weekday: 'long', day: 'numeric', month: 'long'}))}</small></div><button id="nuNext" aria-label="Giorno dopo" ${k >= t ? 'disabled' : ''}>${ico('chev', 20)}</button></div>
       <section class="nuhab">
@@ -3052,7 +3052,7 @@ function renderNutWeek() {
     <div class="head">${hIcon('food')}<h1 class="title">Alimentazione</h1></div>
     <div class="toolbar"><button class="primary" id="nuAdd">${ico('plus', 18, 2.2)}Alimento</button><button id="nuMeals">Pasti salvati</button><span class="sp"></span>
       <button id="nwPrev" aria-label="Settimana prima">${ico('chevl', 18)}</button><span class="range">${fmtShort(kDate(days[0]))} – ${fmtShort(kDate(days[6]))}</span><button id="nwNext" aria-label="Settimana dopo" ${off >= 0 ? 'disabled' : ''}>${ico('chev', 18)}</button></div>
-    <div class="tabs nutabs" role="tablist"><button data-nt="day" role="tab" aria-selected="false">Diario</button><button data-nt="week" class="on" role="tab" aria-selected="true">Settimana</button><button class="nuset" id="nuSet" aria-label="Impostazioni dell'alimentazione">${ico('cog', 18)}<span class="hide-m">Impostazioni</span></button></div>
+    <div class="tabs nutabs" role="tablist"><button data-nt="day" role="tab" aria-selected="false">Diario</button><button data-nt="week" class="on" role="tab" aria-selected="true">Settimana</button><button class="nuset" id="nuSet" aria-label="Impostazioni dell'alimentazione">${ico('cog', 18)}<span>Impostazioni</span></button></div>
     <div class="tablewrap" style="border-top:0"><table class="dt nuweek"><thead><tr><th></th>${days.map(k => `<th class="${k === t ? 'today' : ''}">${GG[kDate(k).getDay()]} ${kDate(k).getDate()}</th>`).join('')}</tr></thead>
       <tbody>${N.slots.map(s => `<tr><td class="nws">${esc(s.name)}</td>${days.map(k => `<td class="${k === t ? 'today' : ''}" data-k="${k}" ${k > t ? '' : 'tabindex="0"'}>${cell(k, s)}</td>`).join('')}</tr>`).join('')}
         <tr><td class="nws">Acqua</td>${days.map(k => `<td class="${k === t ? 'today' : ''}" data-k="${k}">${wh?.val?.[k] ? wh.val[k] + (k === days[0] ? ' ' + esc(wh.unit || '') : '') : ''}</td>`).join('')}</tr>
