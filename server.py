@@ -307,6 +307,7 @@ import webpush  # noqa: E402
 import legal  # noqa: E402
 from iam import DB, IAM, Store, CURRENT_USER, ROLE_LABEL, TotpNeeded, check_password  # noqa: E402
 import brain  # noqa: E402
+import food as food_mod  # noqa: E402
 import invest  # noqa: E402
 import quotes as quotes_mod  # noqa: E402
 import notify  # noqa: E402
@@ -697,6 +698,7 @@ RL_CONTACT_ALL = RateLimit(60, 3600)    # in tutto, all'ora (contro chi cambia I
 RL_RESET = RateLimit(20, 3600)          # tentativi di link di reset per IP all'ora
 RL_PUSH = RateLimit(30, 3600)           # iscrizioni alle notifiche per utente all'ora
 RL_TILES = RateLimit(3000, 600)         # tessere della mappa per utente ogni 10 minuti (navigare normalmente ne usa poche centinaia)
+RL_FOOD = RateLimit(60, 600)           # ricerche di prodotti per utente ogni 10 minuti
 RL_QUOTES = RateLimit(120, 600)        # richieste di prezzi di borsa per utente ogni 10 minuti
 RL_TOTP = RateLimit(6, 900)             # codici di verifica sbagliati per utente ogni 15 minuti
 ANON_BODY_MAX = 64 * 1024               # senza accesso il corpo di una richiesta non può superare 64 KB
@@ -936,7 +938,19 @@ class Handler(BaseHTTPRequestHandler):
         self._json(200, {"smtp": smtp, "source": mailer.source, "configured": mailer.configured,
                          "last_ok": mailer.last_ok, "error": mask_emails(mailer.last_error),
                          "domains": [{"name": d, "primary": d == prim, "env": d == env_domain()} for d in all_domains()],
-                         "ips": sorted(server_ips()), "quotes": quotes_on(), "quotes_env_off": QUOTES_ENV_OFF})
+                         "ips": sorted(server_ips()), "quotes": quotes_on(), "quotes_env_off": QUOTES_ENV_OFF, "food": food_on()})
+
+    def POST_api_admin_server_food(self, url):
+        """Ricerca dei prodotti confezionati su Open Food Facts: accesa o spenta per tutto il server."""
+        u = self.current(admin=True)
+        if u["role"] != "root":
+            raise HTTPError(403, "Solo il root.")
+        if not RL_SERVERCONF.hit(u["id"]):
+            raise HTTPError(429, "Troppe modifiche: riprova tra qualche minuto.")
+        on = bool(self.body().get("on"))
+        conf = server_conf(); conf["food"] = on; save_server_conf(conf)
+        iam.audit(u["id"], "admin.server.food", u["id"], "acceso" if on else "spento")
+        self._json(200, {"ok": True, "food": food_on()})
 
     def POST_api_admin_server_quotes(self, url):
         """Prezzi di borsa automatici (Yahoo Finance / OpenFIGI): acceso o spento per tutto il server."""
@@ -1110,6 +1124,9 @@ class Handler(BaseHTTPRequestHandler):
         iam.audit(u["id"], "consent.health", u["id"], legal.VERSION, self.ip())
         self._json(200, {"ok": True, "health_consent": hc})
 
+    def GET_foods_js(self, url):  # tabella degli alimenti generici (si carica solo aprendo Alimentazione)
+        self._send(200, (WEB_DIR / "foods.js").read_bytes(), "application/javascript; charset=utf-8", {"Cache-Control": "public, max-age=86400"})
+
     def GET_sw_js(self, url):  # service worker delle notifiche: deve stare nella radice del sito
         self._send(200, (WEB_DIR / "sw.js").read_bytes(), "application/javascript; charset=utf-8", {"Cache-Control": "no-cache"})
 
@@ -1127,7 +1144,7 @@ class Handler(BaseHTTPRequestHandler):
         u = iam.session_user(self.cookie_token())
         setup = iam.count() == 0
         self._json(200, {"setup": setup, "setup_here": setup and self.is_local(),
-                         "user": user_payload(u) if u else None, "features": {"vision": bool(u) and vision_ok(), "quotes": bool(u) and quotes_on()},
+                         "user": user_payload(u) if u else None, "features": {"vision": bool(u) and vision_ok(), "quotes": bool(u) and quotes_on(), "food": bool(u) and food_on()},
                          "legal": legal.VERSION, "source": SOURCE_URL})
 
     # --- accesso
@@ -1308,6 +1325,32 @@ class Handler(BaseHTTPRequestHandler):
             except quotes_mod.QuoteError:
                 continue
         self._json(200, {"series": out})
+
+    # --- prodotti confezionati (Open Food Facts)
+    def _need_food(self):
+        u = self.current()
+        if not food_on():
+            raise HTTPError(503, "La ricerca dei prodotti confezionati è spenta su questo server.")
+        if not RL_FOOD.hit(u["id"]):
+            raise HTTPError(429, "Troppe ricerche: riprova tra qualche minuto.")
+
+    def GET_api_food_search(self, url):
+        self._need_food()
+        q = urllib.parse.parse_qs(url.query).get("q", [""])[0]
+        try:
+            self._json(200, {"items": FOODS.search(q)})
+        except food_mod.FoodError as e:
+            raise HTTPError(502, f"Non riesco a cercare i prodotti: {e}.")
+
+    def GET_api_food_barcode(self, url):
+        self._need_food()
+        code = urllib.parse.parse_qs(url.query).get("code", [""])[0].strip()
+        if not food_mod.CODE_RE.fullmatch(code):
+            raise HTTPError(400, "Il codice a barre ha da 8 a 14 cifre.")
+        try:
+            self._json(200, {"item": FOODS.product(code)})
+        except food_mod.FoodError as e:
+            raise HTTPError(502, f"Non riesco a cercare il prodotto: {e}.")
 
     # --- dati personali
     def GET_api_state(self, url):
@@ -4144,6 +4187,14 @@ QUOTES_ENV_OFF = (os.getenv("QUOTES") or "").strip().lower() in ("off", "0", "no
 QUOTES = quotes_mod.Quotes(DATA_DIR / "quotes-cache.json")
 
 
+FOOD_ENV_OFF = (os.getenv("FOOD") or "").strip().lower() in ("off", "0", "no", "false")
+FOODS = food_mod.Foods(DATA_DIR / "food-cache.json")
+
+
+def food_on():
+    return not FOOD_ENV_OFF and server_conf().get("food", True) is not False
+
+
 def quotes_on():
     return not QUOTES_ENV_OFF and server_conf().get("quotes", True) is not False
 
@@ -4260,10 +4311,45 @@ def fmt_n(v):
 
 
 
+def nut_reminders(now):
+    """Alimentazione, se l'utente l'ha chiesto: un'ora dopo l'orario di un momento della giornata, se il diario è vuoto,
+    una notifica. Solo a chi ha le notifiche attive; una volta al giorno per momento."""
+    if not PUSH.ok or now.minute % 5:
+        return
+    day, mins = iso(now.date()), now.hour * 60 + now.minute
+    for u in db.q("SELECT * FROM users WHERE status='active'"):
+        u = dict(u)
+        if not push_subs(u):
+            continue
+        try:
+            CURRENT_USER.set(u["id"])
+            N = store.read().get("nutrition") or {}
+            if not N.get("remind"):
+                continue
+            entries = ((N.get("days") or {}).get(day) or {}).get("e") or []
+            for sl in N.get("slots") or []:
+                t = str(sl.get("time") or "")
+                if not re.fullmatch(r"\d{2}:\d{2}", t):
+                    continue
+                due = int(t[:2]) * 60 + int(t[3:]) + 60
+                if not (due <= mins < due + 5) or any(e.get("slot") == sl.get("id") for e in entries):
+                    continue
+                kind = "nut:" + str(sl.get("id"))[:20]
+                if db.one("SELECT 1 FROM reminder_log WHERE user_id=? AND kind=? AND day=?", (u["id"], kind, day)):
+                    continue
+                db.run("INSERT OR IGNORE INTO reminder_log(user_id, kind, day) VALUES(?,?,?)", (u["id"], kind, day))
+                push_user(u, str(sl.get("name") or "Pasto")[:40], "Segna cosa hai mangiato, basta il nome.", "/#/alimentazione", tag=kind)
+        except Exception:
+            log.exception("Promemoria alimentazione: errore per un utente (gli altri proseguono)")
+        finally:
+            CURRENT_USER.set(None)
+
+
 def every_minute(now):
     event_reminders(now)
     garmin_auto(now)
     invest_daily(now)
+    nut_reminders(now)
 
 
 # ---------------------------------------------------------------- scontrini (servizio vision)

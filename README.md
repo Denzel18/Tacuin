@@ -257,6 +257,10 @@ Dall'assistente: **diario: oggi giornata lenta e bella** aggiunge il testo alla 
 
 ## Cestino
 
+### Alimentazione
+
+Un diario per momenti della giornata (colazione, spuntini, pranzo, cena: li rinomini, aggiungi o togli). Per registrare un alimento **basta il nome**: Tacuìn ha una tabella interna degli alimenti più comuni con porzioni e valori medi, e per i **prodotti confezionati** cerca per nome o codice a barre su **Open Food Facts** (banca dati libera, gratuita, senza chiave; il root la spegne da Impostazioni o con `FOOD=off`). I **pasti salvati** raggruppano gli alimenti che mangi spesso e possono comparire da soli nel diario, «da confermare». Il pulsante **+ 1 bicchiere** riempie l'abitudine **Acqua**; le abitudini **dal diario** (meno zuccheri, 5 porzioni di frutta e verdura, niente alcol, niente fritti) si segnano da sole. Calorie e nutrienti sono spenti all'inizio: si accendono dalle impostazioni dell'Alimentazione.
+
 ### Investimenti e piani di accumulo
 
 Scrivi il **codice ISIN** di un titolo (azioni, ETF, fondi): Tacuìn trova nome, tipo e borse dove è quotato e ne aggiorna il **prezzo da solo**, convertito in euro. Le fonti sono gratuite e senza chiave: **Yahoo Finance** e, come riserva per trovare il simbolo, **OpenFIGI**. Il server manda solo ISIN e simboli, mai dati delle persone; le risposte restano in cache (prezzi 15 minuti, corrispondenze ISIN 30 giorni). Yahoo non è un servizio ufficiale: se smette di rispondere i prezzi restano quelli scritti a mano. Il root li spegne da **Impostazioni → Prezzi di borsa automatici** (o con `QUOTES=off` nel file `.env`).

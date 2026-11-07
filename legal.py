@@ -71,7 +71,7 @@ PRIVACY = """
 <li><b>Garmin</b>: solo se l'interessato collega il proprio account Garmin;</li>
 <li><b>Google, Microsoft o Apple</b>: solo se il partecipante a un invito sceglie di aggiungere l'appuntamento al proprio calendario su quei servizi.</li>
 </ul>
-<p>Per meteo e mappe il server interroga Open-Meteo e OpenStreetMap con le sole coordinate dei luoghi; per i prezzi di borsa, se attivi, interroga Yahoo Finance e OpenFIGI con i soli codici ISIN e simboli dei titoli. In nessun caso invia dati che identifichino l'interessato.</p>
+<p>Per meteo e mappe il server interroga Open-Meteo e OpenStreetMap con le sole coordinate dei luoghi; per i prezzi di borsa, se attivi, interroga Yahoo Finance e OpenFIGI con i soli codici ISIN e simboli dei titoli; per i prodotti confezionati interroga Open Food Facts con il solo nome o codice a barre cercato. In nessun caso invia dati che identifichino l'interessato.</p>
 
 <h2>5. Trasferimenti fuori dallo Spazio economico europeo</h2>
 <p>Il Servizio e le copie di sicurezza risiedono in Italia. I servizi di notifica dei browser e i servizi di calendario scelti dal partecipante possono comportare un trasferimento verso Paesi terzi, in particolare gli Stati Uniti, sulla base della decisione di adeguatezza della Commissione europea del 10 luglio 2023 (EU-U.S. Data Privacy Framework) per le società aderenti, o delle clausole contrattuali tipo. Il contenuto delle notifiche viaggia cifrato.</p>
