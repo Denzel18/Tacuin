@@ -1,0 +1,27 @@
+# Configurazione con token e password: MAI su GitHub
+.env
+.env.txt
+*.cer
+*.pem
+
+# I tuoi dati personali, backup e log
+data/
+
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# Archivi creati da deploy/backup.sh
+backups/
+
+# Log e archivi delle sessioni di test (tools/avvio_test.py)
+logs/
+
+# Terraform (Google Cloud): stato, variabili e segreti restano solo sul tuo computer / Cloud Shell
+deploy/gcp/.terraform/
+deploy/gcp/.terraform.lock.hcl
+deploy/gcp/*.tfstate
+deploy/gcp/*.tfstate.*
+deploy/gcp/terraform.tfvars
+deploy/gcp/app.env

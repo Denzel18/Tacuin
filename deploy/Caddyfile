@@ -1,0 +1,40 @@
+# Caddy: HTTPS automatico (Let's Encrypt) davanti a Tacuìn.
+# Il dominio principale arriva dalla variabile DOMAIN del file .env (es. tacuin.tuodominio.it).
+# Altri indirizzi si aggiungono da Tacuìn (Impostazioni → Server → Dominio): Caddy crea il loro certificato
+# al primo accesso, ma solo dopo aver chiesto a Tacuìn se quel dominio è autorizzato (niente certificati per domini altrui).
+{
+	on_demand_tls {
+		ask http://tracker:8080/api/caddy/ask
+	}
+}
+
+(tacuin) {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# foto degli scontrini e file .FIT: fino a 25 MB
+	request_body {
+		max_size 25MB
+	}
+
+	# Caddy passa già X-Forwarded-For e X-Forwarded-Proto: Tacuìn vede IP reale e HTTPS
+	reverse_proxy tracker:8080
+}
+
+{$DOMAIN} {
+	import tacuin
+}
+
+# indirizzi aggiunti dall'interfaccia
+https:// {
+	tls {
+		on_demand
+	}
+	import tacuin
+}

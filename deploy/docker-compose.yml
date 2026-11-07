@@ -1,0 +1,107 @@
+# Tracker in produzione (VPS o server di casa).
+#
+# Due modi di renderlo raggiungibile da fuori, si sceglie con COMPOSE_PROFILES nel file .env:
+#   COMPOSE_PROFILES=https   → Caddy apre le porte 80/443 e prende da solo il certificato HTTPS (VPS con IP pubblico)
+#   COMPOSE_PROFILES=tunnel  → Cloudflare Tunnel: nessuna porta aperta, va bene anche a casa dietro il router
+#
+# Avvio:  docker compose up -d        Aggiornamento:  ./update.sh        Backup:  ./backup.sh
+
+name: tracker
+
+services:
+  tracker:
+    image: ${TACUIN_IMAGE:-ghcr.io/denzel18/tacuin}:${TAG:-latest}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8080
+      DATA_DIR: /data
+      TZ: ${TZ:-Europe/Rome}
+      VISION_URL: ${VISION_URL:-http://vision:8090}
+      PUBLIC_URL: https://${DOMAIN}
+      COOKIE_SECURE: "1"
+      TRUST_PROXY: "1"
+    volumes:
+      - ./data:/data
+    depends_on:
+      - vision
+    # nessuna porta pubblicata: ci arriva solo Caddy o il tunnel, sulla rete interna
+    expose:
+      - "8080"
+    mem_limit: 512m
+    # meno privilegi: file system in sola lettura (scrive solo in /data), nessuna capability, niente escalation
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 200
+    logging: &logs
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  # Lettura scontrini da foto (OpenCV + Tesseract). Non conserva le immagini.
+  vision:
+    image: ${TACUIN_IMAGE:-ghcr.io/denzel18/tacuin}-vision:${TAG:-latest}
+    restart: unless-stopped
+    environment:
+      VISION_TOKEN: ${VISION_TOKEN:-}
+    expose:
+      - "8090"
+    # pronto = risponde su /health; deploy.sh e update.sh lo avviano per primo e aspettano questo segnale
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8090/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+      start_interval: 3s
+    mem_limit: 768m
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 200
+    logging: *logs
+
+  # --- Profilo "https": VPS con IP pubblico. Certificato Let's Encrypt automatico.
+  caddy:
+    profiles: ["https"]
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: ["no-new-privileges:true"]
+    depends_on:
+      - tracker
+    logging: *logs
+
+  # --- Profilo "tunnel": casa o server senza IP pubblico. Nessuna porta aperta sul router.
+  # Nel pannello Cloudflare (Zero Trust → Networks → Tunnels) il "public hostname" punta a http://tracker:8080
+  cloudflared:
+    profiles: ["tunnel"]
+    image: cloudflare/cloudflared:2024.12.2
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    depends_on:
+      - tracker
+    logging: *logs
+
+volumes:
+  caddy_data:
+  caddy_config:

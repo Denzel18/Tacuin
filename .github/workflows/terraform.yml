@@ -1,0 +1,28 @@
+# Controlla la configurazione Terraform di Google Cloud (formato e validità) quando cambia.
+name: Terraform
+
+on:
+  push:
+    branches: [main]
+    paths: ["deploy/gcp/**", ".github/workflows/terraform.yml"]
+  pull_request:
+    paths: ["deploy/gcp/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: deploy/gcp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate
+      - name: Script
+        run: bash -n deploy.sh && shellcheck -S warning deploy.sh ../setup.sh ../backup.sh

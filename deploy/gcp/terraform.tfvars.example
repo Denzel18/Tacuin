@@ -1,0 +1,18 @@
+# Copia in terraform.tfvars (cp terraform.tfvars.example terraform.tfvars) e compila.
+# Questo file non contiene segreti, ma resta comunque fuori da GitHub.
+
+project_id = "tacuin-123456" # ID del progetto (Console Google Cloud → in alto, menu dei progetti)
+
+# Milano. Altre: europe-west1 (Belgio, un po' meno cara), europe-west3 (Francoforte)
+region = "europe-west8"
+zone   = "europe-west8-a"
+
+# e2-small: 2 GB, consigliata (con la scansione scontrini). e2-micro: 1 GB, solo senza scontrini.
+machine_type = "e2-small"
+
+# Altre persone che possono entrare in SSH (tu, come proprietario del progetto, puoi già)
+admin_members = []
+
+# Facoltativo: avviso via email quando la spesa del mese supera il 50/90/100% di questa cifra
+# billing_account = "XXXXXX-XXXXXX-XXXXXX"   # Console → Fatturazione → ID account di fatturazione
+# budget_amount   = 30

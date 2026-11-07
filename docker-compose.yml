@@ -1,0 +1,32 @@
+services:
+  tracker:
+    build: .
+    # Oppure usa l'immagine pubblicata da GitHub Actions (togli 'build' e scommenta):
+    # image: ghcr.io/denzel18/mypersonalbrain:latest
+    container_name: tracker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8080
+      DATA_DIR: /data
+      TZ: Europe/Rome
+      VISION_URL: http://vision:8090
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data
+    depends_on:
+      - vision
+
+  # Lettura degli scontrini da foto (OpenCV + Tesseract). Non conserva le immagini.
+  vision:
+    build: ./vision
+    # image: ghcr.io/denzel18/mypersonalbrain-vision:latest
+    container_name: tracker-vision
+    restart: unless-stopped
+    environment:
+      VISION_TOKEN: ${VISION_TOKEN:-}
+    # Esposto solo su questo PC: serve se il tracker gira fuori da Docker (es. Windows con Avvia Tracker.bat)
+    ports:
+      - "127.0.0.1:8090:8090"

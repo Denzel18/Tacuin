@@ -1,0 +1,11 @@
+.env
+.env.txt
+data/
+*.md
+*.bat
+*.cer
+.git
+.github
+.gitattributes
+__pycache__/
+vision/
