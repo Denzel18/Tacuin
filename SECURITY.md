@@ -17,5 +17,7 @@ Solo l'ultima versione sul ramo `main`. Chi ha installato Tacuìn aggiorna con `
 - Content Security Policy con *nonce*: nella pagina parte solo il codice di quella risposta.
 - Ogni utente vede solo i propri dati; root e admin gestiscono gli account ma non leggono spese, diario o abitudini degli altri.
 - Container in sola lettura, senza privilegi, con utente non root; backup cifrati in un bucket dove il server può solo scrivere.
+- Scudo contro raffiche di richieste e scanner: limite per indirizzo IP, blocco temporaneo automatico (15 minuti, 6 ore, 24 ore), registro e avviso al root; tetto alle connessioni contemporanee; tempi massimi in Caddy contro le connessioni lente.
+- Controlli automatici su GitHub a ogni modifica e ogni settimana: Bandit (codice), pip-audit (librerie), Trivy (immagine Docker), Dependabot (aggiornamenti di sicurezza).
 
 Chi installa Tacuìn è responsabile della propria installazione: aggiornamenti, backup, password del root e configurazione del server.

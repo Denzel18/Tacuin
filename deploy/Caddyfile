@@ -6,6 +6,16 @@
 	on_demand_tls {
 		ask http://tracker:8080/api/caddy/ask
 	}
+	# contro chi apre connessioni e manda i dati a goccia (slowloris) o intestazioni enormi
+	servers {
+		timeouts {
+			read_header 10s
+			read_body 2m
+			write 2m
+			idle 2m
+		}
+		max_header_size 32KB
+	}
 }
 
 (tacuin) {
@@ -15,7 +25,11 @@
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+		Permissions-Policy "camera=(self), microphone=(), geolocation=(self), payment=(), usb=()"
+		Cross-Origin-Opener-Policy "same-origin"
 		-Server
+		-X-Powered-By
 	}
 
 	# foto degli scontrini e file .FIT: fino a 25 MB
@@ -24,7 +38,17 @@
 	}
 
 	# Caddy passa già X-Forwarded-For e X-Forwarded-Proto: Tacuìn vede IP reale e HTTPS
-	reverse_proxy tracker:8080
+	# metodi che l'app non usa: fermati qui, non arrivano nemmeno a Tacuìn
+	@strani not method GET POST
+	respond @strani 405
+
+	reverse_proxy tracker:8080 {
+		# se Tacuìn è sovraccarico, meglio una risposta veloce che code infinite
+		transport http {
+			dial_timeout 5s
+			response_header_timeout 60s
+		}
+	}
 }
 
 {$DOMAIN} {

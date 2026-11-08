@@ -4,6 +4,7 @@ FROM python:3.12-slim
 ENV PYTHONUNBUFFERED=1 PORT=8090 OCR_LANGS=ita+eng OMP_THREAD_LIMIT=2
 
 RUN apt-get update \
+ && apt-get upgrade -y --no-install-recommends \
  && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-ita tesseract-ocr-eng libglib2.0-0 \
  && rm -rf /var/lib/apt/lists/* \
  && useradd --uid 1000 --create-home app

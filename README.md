@@ -263,6 +263,14 @@ Dall'assistente: **diario: oggi giornata lenta e bella** aggiunge il testo alla 
 - `web/index.html` — l'app (una pagina); gli stili sono in `web/css/`, un file per argomento, caricati in ordine numerico (l'ordine conta). Il server aggiunge ai link una versione calcolata dal contenuto, così dopo un aggiornamento il browser non usa file vecchi.
 - `web/foods.js` — tabella degli alimenti generici.
 
+### Sicurezza e protezione da attacchi
+
+- **Scudo (in Tacuìn):** per ogni indirizzo IP un limite di richieste (8 al secondo in media, fino a 240 di fila) e di richieste contemporanee; punti per i comportamenti sospetti (percorsi da scanner come `/.env` o `/wp-login.php`, richieste malformate, accessi sbagliati, limiti superati). Troppi punti in 10 minuti = blocco temporaneo: 15 minuti, poi 6 ore, poi 24 ore se ricomincia. Ogni blocco finisce nel **Registro attività** e il root riceve un avviso (al massimo uno all'ora). Le reti interne (Docker, la macchina stessa) non vengono mai bloccate.
+- **Connessioni:** al massimo 256 insieme (`MAX_CONNECTIONS`); oltre, le nuove si chiudono subito invece di esaurire la memoria. Una connessione ferma si chiude dopo 30 secondi.
+- **Caddy:** tempi massimi contro chi manda i dati a goccia (slowloris), intestazioni fino a 32 KB, solo i metodi GET e POST, intestazioni di protezione (HSTS, niente iframe, permessi del browser ridotti).
+- **Controlli automatici su GitHub** (workflow «Sicurezza», a ogni modifica e ogni lunedì): Bandit sul codice Python, pip-audit sulle librerie, Trivy sull'immagine Docker; Dependabot propone gli aggiornamenti di sicurezza.
+- Contro un attacco molto grande (milioni di richieste da migliaia di indirizzi) serve una protezione prima del server: Cloudflare (gratuito, basta spostare il DNS) oppure Google Cloud Armor (richiede un bilanciatore, a pagamento).
+
 ### Accessibilità
 
 Il menu si usa da tastiera (Tab, Invio), c'è «Vai al contenuto», le finestre trattengono il focus e lo restituiscono alla chiusura, i colori rispettano il contrasto minimo WCAG AA (4,5:1) in tutti e quattro i temi, le animazioni si riducono se il sistema lo chiede e con lo zoom alto la barra in basso si rimpicciolisce. Il controllo automatico (axe-core) su tutte le pagine e i temi non trova violazioni.

@@ -1,0 +1,24 @@
+# Dependabot: apre da solo una pull request quando una libreria, l'immagine di base o un'azione di GitHub
+# ha un aggiornamento di sicurezza (e una volta al mese per gli aggiornamenti normali).
+version: 2
+updates:
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: monthly
+  - package-ecosystem: docker
+    directory: "/vision"
+    schedule:
+      interval: monthly
+  - package-ecosystem: pip
+    directory: "/vision"
+    schedule:
+      interval: monthly
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+  - package-ecosystem: terraform
+    directory: "/deploy/gcp"
+    schedule:
+      interval: monthly

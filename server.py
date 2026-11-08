@@ -310,6 +310,7 @@ from iam import DB, IAM, Store, CURRENT_USER, ROLE_LABEL, TotpNeeded, check_pass
 import brain  # noqa: E402
 import food as food_mod  # noqa: E402
 import invest  # noqa: E402
+import shield as shield_mod  # noqa: E402
 import nutri  # noqa: E402
 import quotes as quotes_mod  # noqa: E402
 import notify  # noqa: E402
@@ -733,7 +734,7 @@ def user_payload(u):
 class Handler(BaseHTTPRequestHandler):
     server_version = "Tracker"
     sys_version = ""   # non dice la versione di Python
-    timeout = 60       # una connessione ferma viene chiusa dopo 60 secondi
+    timeout = 30       # una connessione ferma (o che manda i dati a goccia) viene chiusa dopo 30 secondi
 
     def log_message(self, *args):
         pass
@@ -856,9 +857,50 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def send_response(self, code, message=None):
+        self._status = code
+        super().send_response(code, message)
+
+    def send_error(self, code, message=None, explain=None):
+        # richieste malformate o metodi che l'app non usa (HEAD, PUT, TRACE…): spesso sono scanner
+        if code in (400, 405, 414, 431, 501):
+            ip = self.client_address[0]
+            try:
+                if self.headers is not None:
+                    ip = self.ip()
+            except Exception:
+                pass
+            SHIELD.strike(ip, "bad", f"{code} {str(getattr(self, 'command', '') or '')[:10]}")
+        super().send_error(code, message, explain)
+
     def route(self, method):
+        ip = self.ip()
+        blk = SHIELD.check(ip)
+        if blk:
+            code, wait = blk
+            return self._json(code, {"error": f"Troppe richieste da questo indirizzo: riprova tra {max(1, round(wait / 60))} minuti."
+                                     if wait > 90 else "Troppe richieste: riprova tra qualche secondo."}, {"Retry-After": str(wait)})
+        self._status = 0
+        try:
+            self._route(method)
+        finally:
+            SHIELD.done(ip)
+            path = self.path.split("?", 1)[0]
+            st = self._status
+            if st == 404 and not path.startswith(("/api/", "/css/", "/vendor/", "/tiles/")):
+                SHIELD.strike(ip, "missing", path[:80])
+            elif st == 429:
+                SHIELD.strike(ip, "limit", path[:80])
+            elif st in (400, 401, 403) and path in ("/api/login", "/api/register", "/api/reset", "/api/setup", "/api/contact",
+                                                     "/api/email/verify", "/api/me/email/confirm", "/api/invite", "/api/invite/answer"):
+                SHIELD.strike(ip, "auth", path)
+
+    def _route(self, method):
         try:
             url = urllib.parse.urlparse(self.path)
+            if SHIELD.path_is_scan(self.path):
+                SHIELD.strike(self.ip(), "scan", url.path[:80])
+                raise HTTPError(404, "non trovato")
             if method == "GET" and url.path.startswith("/vendor/"):
                 return self.static(url.path)
             if method == "GET" and url.path.startswith("/css/"):  # stili dell'app, uno per argomento (il link porta ?v=versione)
@@ -4261,6 +4303,43 @@ QUOTES_ENV_OFF = (os.getenv("QUOTES") or "").strip().lower() in ("off", "0", "no
 QUOTES = quotes_mod.Quotes(DATA_DIR / "quotes-cache.json")
 
 
+# ---------------------------------------------------------------- scudo (DDoS e scanner)
+_SEC = {"pending": [], "last": 0.0, "lock": threading.Lock()}
+SEC_ALERT_EVERY = int(os.getenv("SECURITY_ALERT_MINUTES", "60")) * 60
+
+
+def security_alert(ban):
+    """Un IP è stato bloccato: Registro attività subito, avviso al root al massimo una volta all'ora (con il riepilogo)."""
+    mins = ban["seconds"] // 60
+    detail = f"{ban['ip']} bloccato per {mins // 60} ore" if mins >= 60 else f"{ban['ip']} bloccato per {mins} minuti"
+    detail += f": {ban['count']} {ban['why']}" + (f" (es. {', '.join(ban['examples'])})" if ban["examples"] else "")
+    log.warning("Scudo: %s", detail)
+    iam.audit(None, "security.ban", None, detail[:300], ban["ip"])
+    with _SEC["lock"]:
+        _SEC["pending"].append(detail)
+        due = time.time() - _SEC["last"] >= SEC_ALERT_EVERY
+        if not due:
+            return
+        items, _SEC["pending"], _SEC["last"] = _SEC["pending"][-10:], [], time.time()
+    threading.Thread(target=_security_notify, args=(items,), daemon=True).start()
+
+
+def _security_notify(items):
+    try:
+        for u in db.q("SELECT * FROM users WHERE role='root' AND status='active'"):
+            u = dict(u)
+            title = "Sicurezza: un indirizzo bloccato" if len(items) == 1 else f"Sicurezza: {len(items)} indirizzi bloccati"
+            body = items[0] if len(items) == 1 else "; ".join(items[:3]) + ("…" if len(items) > 3 else "")
+            if not push_user(u, title, body, "/#/registro", tag="security", urgency="high") and mailer.configured:
+                email_user(u, title, "".join(f"<p style=\"margin:0 0 6px\">{esc(x)}</p>" for x in items) +
+                           "<p style=\"margin:12px 0 0;color:#75746f\">Il blocco è automatico e temporaneo. I dettagli sono nel Registro attività.</p>",
+                           "Apri il Registro attività", f"{app_url()}/#/registro")
+    except Exception:
+        log.exception("Avviso di sicurezza non inviato")
+
+
+SHIELD = shield_mod.Shield(on_ban=security_alert)
+
 _ASSET_V = {}
 
 
@@ -4771,6 +4850,32 @@ def callback_action(data, chat):
 # ---------------------------------------------------------------- avvio
 class Server(ThreadingHTTPServer):
     daemon_threads = True
+    request_queue_size = 128
+    MAX_THREADS = int(os.getenv("MAX_CONNECTIONS", "256"))  # oltre, le nuove connessioni si chiudono subito: niente esaurimento di memoria
+
+    def __init__(self, *a, **k):
+        self._slots = threading.BoundedSemaphore(self.MAX_THREADS)
+        super().__init__(*a, **k)
+
+    def process_request(self, request, client_address):
+        if not self._slots.acquire(blocking=False):
+            try:
+                request.sendall(b"HTTP/1.1 503 Service Unavailable\r\nRetry-After: 5\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+            except OSError:
+                pass
+            self.shutdown_request(request)
+            return
+        try:
+            super().process_request(request, client_address)
+        except Exception:
+            self._slots.release()
+            raise
+
+    def process_request_thread(self, request, client_address):
+        try:
+            super().process_request_thread(request, client_address)
+        finally:
+            self._slots.release()
     # Su Windows SO_REUSEADDR permetterebbe a due copie di usare la stessa porta
     allow_reuse_address = not WINDOWS
 

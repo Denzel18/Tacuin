@@ -1,0 +1,58 @@
+# Controlli di sicurezza: a ogni push, a ogni pull request e ogni lunedì (le vulnerabilità nuove escono anche
+# quando il codice non cambia). Se uno fallisce, GitHub lo segna in rosso e manda un'email.
+name: Sicurezza
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  codice:
+    name: Codice Python (Bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install bandit==1.7.10
+      # gravità e affidabilità almeno medie; B310 (chiamate a servizi fissi via https) e B104 (ascolto dentro il container) sono voluti
+      - run: bandit -r . -x ./vision/tests,./tools -ll -ii --skip B310,B104
+
+  dipendenze:
+    name: Librerie (pip-audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pip-audit==2.7.3
+      - name: Librerie dell'app
+        run: |
+          grep -oE '[a-zA-Z0-9_.-]+==[0-9][0-9a-zA-Z.]*' Dockerfile > /tmp/app-req.txt
+          cat /tmp/app-req.txt
+          pip-audit -r /tmp/app-req.txt --progress-spinner off
+      - name: Librerie del servizio scontrini
+        run: pip-audit -r vision/requirements.txt --progress-spinner off
+
+  immagine:
+    name: Immagine Docker (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t tacuin:scan .
+      - uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: tacuin:scan
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+          format: table

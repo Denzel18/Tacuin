@@ -5352,7 +5352,7 @@ const AUDIT_LABEL = {'login': 'Accesso', 'login.fail': 'Accesso fallito', 'user.
   'admin.approve': 'Approvato', 'admin.reject': 'Rifiutato', 'admin.disable': 'Disattivato', 'admin.enable': 'Riattivato', 'admin.role': 'Ruolo cambiato',
   'admin.logout_all': 'Sessioni chiuse', 'admin.invites_off': 'Inviti disattivati', 'admin.totp_reset': 'Verifica in due passaggi azzerata', 'user.totp_recovery': 'Codice di recupero usato', 'admin.invites_on': 'Inviti riattivati', 'user.totp_on': 'Verifica in due passaggi attivata', 'user.totp_off': 'Verifica in due passaggi disattivata', 'login.totp_fail': 'Codice di verifica sbagliato', 'admin.reset_link': 'Link nuova password', 'admin.delete': 'Account eliminato', 'user.password': 'Password cambiata',
   'user.email': 'Email cambiata', 'sessions.revoke': 'Uscita da tutti i dispositivi', 'telegram.link': 'Telegram collegato', 'telegram.unlink': 'Telegram scollegato', 'push.subscribe': 'Notifiche attivate su un dispositivo',
-  'user.self_delete': "Account eliminato dall'utente"};
+  'user.self_delete': "Account eliminato dall'utente", 'security.ban': 'Indirizzo bloccato (scudo)', 'admin.server.quotes': 'Prezzi automatici', 'admin.server.food': 'Ricerca prodotti'};
 async function renderAudit() {
   const m = $('#main');
   m.innerHTML = `<div class="head">${hIcon('list')}<h1 class="title">Registro attività</h1></div><p class="hint">Caricamento…</p>`;
