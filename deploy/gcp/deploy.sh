@@ -21,6 +21,9 @@ DEPLOY=$(cd "$HERE/.." && pwd)
 SECRETS="$HERE/app.env"          # il .env dell'app: resta qui (chmod 600) e su GitHub non va mai
 LOG="$HERE/installazione.log"
 exec 3>&1                        # fd 3 = lo schermo, anche quando l'output dei comandi va nel log
+# gcloud non deve mai fermarsi ad aspettare una risposta: con l'output nel log la domanda non si vedrebbe
+# e lo script sembrerebbe bloccato. Le uniche domande sono quelle di questo script (e il login, se serve).
+export CLOUDSDK_CORE_DISABLE_PROMPTS=1
 
 # ---------------------------------------------------------------- barra di avanzamento e log
 CUR_I=0; CUR_N=1; CUR_LABEL=""; SPIN=""
@@ -128,7 +131,7 @@ login() {
   tell "  2) consenti l'accesso, copia il codice che ti mostra Google"
   tell "  3) torna qui, incollalo e premi Invio"
   tell ""
-  gcloud auth login --update-adc --no-launch-browser </dev/tty >&3 2>&3 \
+  CLOUDSDK_CORE_DISABLE_PROMPTS=0 gcloud auth login --update-adc --no-launch-browser </dev/tty >&3 2>&3 \
     || die "login non riuscito: riprova, oppure apri Cloud Shell dal browser (shell.cloud.google.com)"
 }
 target() {
@@ -174,12 +177,24 @@ wait_ssh() {
 }
 
 # ---------------------------------------------------------------- passi dell'installazione
+project_ok() { [ -n "$1" ] && [ "$(gcloud projects describe "$1" --format='value(lifecycleState)' 2>/dev/null || true)" = ACTIVE ]; }
+
 pick_project() {
-  [ -f "$HERE/terraform.tfvars" ] && return 0
   local PID ALL
+  if [ -f "$HERE/terraform.tfvars" ]; then
+    PID=$(tfvar project_id)
+    project_ok "$PID" && return 0
+    # il progetto di questa cartella è stato cancellato: metto da parte la vecchia configurazione e riparto
+    tell "  Il progetto «$PID» non esiste più (cancellato?): riparto da un progetto nuovo."
+    local old; old="$HERE/vecchio-$(date +%Y%m%d-%H%M%S)"; mkdir -p "$old"
+    mv "$HERE/terraform.tfvars" "$old/"
+    for f in terraform.tfstate terraform.tfstate.backup app.env .terraform; do [ ! -e "$HERE/$f" ] || mv "$HERE/$f" "$old/"; done
+    tell "  La configurazione vecchia è in $old"
+  fi
   PID=$(gcloud config get-value project 2>/dev/null || true)
+  project_ok "$PID" || PID=""   # Cloud Shell ricorda anche i progetti cancellati
   if [ -z "$PID" ]; then
-    ALL=$(gcloud projects list --format='value(projectId)' 2>/dev/null || true)
+    ALL=$(gcloud projects list --filter='lifecycleState:ACTIVE' --format='value(projectId)' 2>/dev/null || true)
     case "$(grep -c . <<<"$ALL" || true)" in
       0) # account nuovo, nessun progetto: lo creo io
          PID="tacuin-$(od -An -N3 -tu4 /dev/urandom | tr -dc 0-9 | cut -c1-6)"
@@ -202,6 +217,8 @@ pick_project() {
 ensure_billing() {
   local PID on ACC n
   PID=$(tfvar project_id)
+  # l'API della fatturazione è gratuita e si può accendere anche su un progetto senza fatturazione
+  gcloud services enable cloudbilling.googleapis.com --project "$PID" >>"$LOG" 2>&1 || true
   on=$(gcloud billing projects describe "$PID" --format='value(billingEnabled)' 2>>"$LOG" || true)
   [ "${on,,}" = true ] && return 0
   ACC=$(gcloud billing accounts list --filter='open=true' --format='value(name.basename(),displayName)' 2>>"$LOG" || true)

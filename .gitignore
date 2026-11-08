@@ -28,3 +28,4 @@ deploy/gcp/app.env
 deploy/gcp/app.env.vecchio
 deploy/gcp/installazione.log
 deploy/gcp/.tfplan
+deploy/gcp/vecchio-*/
