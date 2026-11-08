@@ -22,6 +22,7 @@ tacuin\
 ├── Avvia Tracker.bat                  doppio clic per avviarlo (Windows)
 ├── Attiva / Disattiva avvio automatico.bat
 ├── PC sempre acceso (alla corrente).bat · Ripristina standby PC.bat
+├── *.sh                               gli stessi script per Linux (e Mac): Avvia Tracker.sh, Avvia per test.sh…
 ├── server.py                          web server, API, assistente, inviti, notifiche
 ├── webpush.py                         notifiche push del browser (Web Push con VAPID, nessun servizio esterno)
 ├── iam.py                             database SQLite, utenti, ruoli, sessioni, registro attività
@@ -602,7 +603,7 @@ Tutto è automatico con `deploy/gcp/`: **Terraform** crea l'infrastruttura e `de
 
 Cosa viene creato: una VM **e2-small** (2 GB) a **Milano** (`europe-west8`) con Ubuntu 24.04 e IP statico; firewall con **solo 80/443 aperti a internet** (SSH solo tramite **IAP**, cioè con il tuo account Google: nessuna porta 22 esposta, nessuna chiave da custodire); snapshot giornalieri del disco (14 giorni); un bucket privato per i backup cifrati, su cui la VM può **solo scrivere**; i container non possono leggere il token della VM. Costo indicativo: circa **14 $/mese** di VM + **3,65 $** di IP + pochi centesimi di disco e backup (i nuovi account hanno 300 $ di credito per 90 giorni).
 
-1. **Account e progetto**: [console.cloud.google.com](https://console.cloud.google.com) → crea un progetto (es. `tacuin`) e collega la fatturazione. Annota l'**ID del progetto**. Attiva la verifica in due passaggi sul tuo account Google.
+1. **Account Google Cloud**: entra in [console.cloud.google.com](https://console.cloud.google.com) con il tuo account Google e attiva la verifica in due passaggi. Se non hai ancora un progetto, lo crea lo script; se c'è un solo account di fatturazione lo collega lui. Se non ne hai nessuno, lo script si ferma e ti manda a [crearlo](https://console.cloud.google.com/billing/create) (serve una carta; i nuovi account hanno un credito gratuito): poi rilanci lo stesso comando.
 2. Apri **Cloud Shell** (icona `>_` in alto a destra): ha già `gcloud`, `terraform` e `git`.
 3. ```bash
    git clone https://github.com/Denzel18/tacuin.git && cd tacuin/deploy/gcp
@@ -614,7 +615,7 @@ Cosa viene creato: una VM **e2-small** (2 GB) a **Milano** (`europe-west8`) con 
 
 | Comando (in Cloud Shell, da `deploy/gcp`) | Cosa fa |
 |---|---|
-| `./deploy.sh update` | backup, scarica l'ultima versione e riavvia |
+| `./deploy.sh update` | backup, scarica l'ultima versione e riavvia; se da questa cartella o su quella VM Tacuìn non è ancora installato, lo installa |
 | `./deploy.sh ssh` | entra nella VM (o pulsante **SSH** in *Compute Engine → Istanze VM*) |
 | `./deploy.sh logs` / `status` | log in tempo reale / stato |
 | `./deploy.sh backup` | backup subito |
@@ -659,7 +660,18 @@ curl http://localhost:8080/api/health        :: stato del server, delle notifich
 docker compose logs -f                       :: log in Docker
 ```
 
-> Il progetto funziona anche su Mac e Linux: `python3 server.py`.
+> **Linux (e Mac):** ci sono gli stessi script dei `.bat`, con estensione `.sh`. Da terminale, nella cartella del progetto:
+>
+> | Script | Cosa fa |
+> |---|---|
+> | `./"Avvia Tracker.sh"` | avvia Tacuìn nella finestra (al primo avvio crea il `.env` e lo apre nell'editor) |
+> | `./"Avvia per test.sh"` | aggiorna il codice, accende il servizio scontrini con Docker, avvia e archivia i log |
+> | `./"Attiva avvio automatico.sh"` | parte da solo, in background, a ogni accesso (servizio systemd del tuo utente, senza sudo; senza systemd usa cron) |
+> | `./"Disattiva avvio automatico.sh"` | toglie l'avvio automatico e ferma Tacuìn |
+> | `./"PC sempre acceso (alla corrente).sh"` | alla corrente niente standby, nemmeno a coperchio chiuso (chiede la password di amministratore) |
+> | `./"Ripristina standby PC.sh"` | torna come prima |
+>
+> Dal file manager basta un doppio clic, se il tuo desktop permette di eseguire gli script (es. Ubuntu: tasto destro → *Esegui come programma*).
 
 ## Licenza
 

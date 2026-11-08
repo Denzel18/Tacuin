@@ -38,7 +38,7 @@ draw() {  # draw [spinner] [tempo]
 spin_start() {
   if [ ! -t 3 ]; then printf '  [%d/%d] %s\n' "$((CUR_I + 1))" "$CUR_N" "$CUR_LABEL" >&3; return 0; fi
   ( trap - ERR; t0=$SECONDS; i=0
-    while :; do draw "${FR[i % 10]}" "$((SECONDS - t0))s"; i=$((i + 1)); sleep 0.2; done ) &
+    while :; do draw "${FR[i % 10]}" "$((SECONDS - t0))s"; i=$((i + 1)); sleep 0.2; done ) 2>/dev/null &
   SPIN=$!
 }
 spin_stop() {
@@ -178,14 +178,51 @@ pick_project() {
   [ -f "$HERE/terraform.tfvars" ] && return 0
   local PID ALL
   PID=$(gcloud config get-value project 2>/dev/null || true)
-  if [ -z "$PID" ]; then   # un solo progetto sull'account: è quello
+  if [ -z "$PID" ]; then
     ALL=$(gcloud projects list --format='value(projectId)' 2>/dev/null || true)
-    [ "$(grep -c . <<<"$ALL")" = 1 ] && PID=$ALL
+    case "$(grep -c . <<<"$ALL" || true)" in
+      0) # account nuovo, nessun progetto: lo creo io
+         PID="tacuin-$(od -An -N3 -tu4 /dev/urandom | tr -dc 0-9 | cut -c1-6)"
+         tell "  Non hai ancora progetti su Google Cloud: creo «$PID»."
+         gcloud projects create "$PID" --name="Tacuin" >>"$LOG" 2>&1 \
+           || die "Google non mi ha lasciato creare il progetto: il motivo è nel log" ;;
+      1) PID=$ALL ;;   # un solo progetto: è quello
+      *) tell "  I tuoi progetti Google Cloud:"; sed 's/^/    /' <<<"$ALL" >&3
+         ask PID "Su quale progetto installo Tacuìn? (scrivi l'ID)" ;;
+    esac
   fi
-  [ -n "$PID" ] || ask PID "ID del progetto Google Cloud (lo trovi in alto nella console, es. tacuin-123456)"
   [[ "$PID" =~ ^[a-z][a-z0-9-]{4,28}[a-z0-9]$ ]] || die "«$PID» non sembra un ID di progetto (tutto minuscolo, es. tacuin-123456)"
+  gcloud config set project "$PID" >>"$LOG" 2>&1 || true
   sed "s|^project_id = \"[^\"]*\"|project_id = \"$PID\"|" "$HERE/terraform.tfvars.example" > "$HERE/terraform.tfvars"
   tell "  Progetto Google Cloud: $PID"
+}
+
+# Senza fatturazione Google non crea la VM. Se c'è un solo account di fatturazione lo collego io;
+# se non ce n'è nessuno, spiego come crearlo (serve una carta; i nuovi account hanno un credito gratuito).
+ensure_billing() {
+  local PID on ACC n
+  PID=$(tfvar project_id)
+  on=$(gcloud billing projects describe "$PID" --format='value(billingEnabled)' 2>>"$LOG" || true)
+  [ "${on,,}" = true ] && return 0
+  ACC=$(gcloud billing accounts list --filter='open=true' --format='value(name.basename(),displayName)' 2>>"$LOG" || true)
+  n=$(grep -c . <<<"$ACC" || true)
+  if [ "$n" = 0 ]; then
+    tell ""
+    tell "  Al progetto $PID manca la fatturazione: senza, Google non crea la VM."
+    tell "  1) apri https://console.cloud.google.com/billing/create e crea un account di fatturazione"
+    tell "     (serve una carta; i nuovi account hanno un credito gratuito per i primi mesi)"
+    tell "  2) torna qui e rilancia lo stesso comando: il collegamento al progetto lo faccio io."
+    die "fatturazione da attivare"
+  fi
+  if [ "$n" = 1 ]; then
+    ACC=$(cut -f1 <<<"$ACC")
+  else
+    tell "  I tuoi account di fatturazione:"; sed 's/\t/   /; s/^/    /' <<<"$ACC" >&3
+    ask ACC "Quale collego al progetto $PID? (scrivi l'ID, la prima colonna)"
+  fi
+  tell "  Collego la fatturazione $ACC al progetto $PID."
+  gcloud billing projects link "$PID" --billing-account="$ACC" >>"$LOG" 2>&1 \
+    || die "non sono riuscito a collegare la fatturazione: il motivo è nel log"
 }
 
 ask_root() {  # le sole domande della prima installazione
@@ -369,6 +406,7 @@ cmd_up() {
   [ -n "${KEEP_LOG:-}" ] || { : >"$LOG"; chmod 600 "$LOG"; }
   login                     # eventuale accesso a Google prima della barra
   pick_project
+  ensure_billing
   [ -f "$SECRETS" ] && grep -q '^DOMAIN=..*' "$SECRETS" || ask_root
 
   bar_begin "Installo Tacuìn su Google Cloud" 10
@@ -404,9 +442,6 @@ cmd_up() {
 }
 
 update_files() {
-  # su questa VM Tacuìn non c'è (VM nuova, ricreata o di un'altra installazione): aggiornare non ha senso
-  remote "test -f /opt/tracker/.env" \
-    || die "Su «$VM» (progetto $PROJECT) Tacuìn non è installato: /opt/tracker non c'è. Se è la VM giusta, lancia «./deploy.sh up»."
   remote "rm -rf ~/deploy && mkdir -p ~/deploy"
   gcloud compute scp --zone "$ZONE" --project "$PROJECT" --tunnel-through-iap --quiet \
     "$DEPLOY/docker-compose.yml" "$DEPLOY/Caddyfile" "$DEPLOY/.env.example" "$DEPLOY/backup.sh" \
@@ -425,7 +460,18 @@ update_run() {
 }
 cmd_update() {
   : >"$LOG"; chmod 600 "$LOG"
+  if [ ! -f "$HERE/terraform.tfvars" ]; then
+    local go
+    tell ""; tell "  Da questa cartella Tacuìn non è ancora stato installato su Google Cloud."
+    ask go "Lo installo adesso? (S/n)" "s"
+    [ "${go,,}" = s ] || die "annullato"
+    KEEP_LOG=1 cmd_up; return
+  fi
   target
+  if ! remote "test -f /opt/tracker/.env" >>"$LOG" 2>&1; then
+    tell ""; tell "  Sulla VM «$VM» Tacuìn non c'è ancora (VM nuova o installazione interrotta): lo installo adesso."
+    KEEP_LOG=1 cmd_up; return
+  fi
   local IP=""
   bar_begin "Aggiorno Tacuìn" 2
   step "Copio i file aggiornati" update_files
