@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Linux (e Mac): avvia Tacuìn in questa finestra. Per fermarlo: Ctrl+C o chiudi la finestra.
-cd "$(dirname "$0")" || exit 1
+cd "$(dirname "$0")/../.." || exit 1   # gli script stanno in comandi/linux: lavoro dalla cartella principale
 PY=$(command -v python3 || command -v python)
 if [ -z "$PY" ] || ! "$PY" -c 'import sys; sys.exit(sys.version_info < (3, 9))' 2>/dev/null; then
   echo; echo "  Python 3.9 o più recente non trovato."

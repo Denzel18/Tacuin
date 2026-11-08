@@ -19,10 +19,11 @@
 
 ```
 tacuin\
-├── Avvia Tracker.bat                  doppio clic per avviarlo (Windows)
-├── Attiva / Disattiva avvio automatico.bat
-├── PC sempre acceso (alla corrente).bat · Ripristina standby PC.bat
-├── *.sh                               gli stessi script per Linux (e Mac): Avvia Tracker.sh, Avvia per test.sh…
+├── comandi\                           tutti i comandi per avviarlo sul tuo PC
+│   ├── windows\                       Avvia Tracker.bat (doppio clic), Avvia per test, avvio automatico, standby
+│   ├── linux\                         gli stessi, in versione .sh (anche Mac)
+│   └── avvio_test.py                  l'avvio per i test usato da entrambi
+├── deploy\                            server in cloud: Docker, Caddy, backup; deploy\gcp\deploy.sh per Google Cloud
 ├── server.py                          web server, API, assistente, inviti, notifiche
 ├── webpush.py                         notifiche push del browser (Web Push con VAPID, nessun servizio esterno)
 ├── iam.py                             database SQLite, utenti, ruoli, sessioni, registro attività
@@ -67,7 +68,7 @@ Estrai lo zip e sposta la cartella `tracker-server` in **`C:\Users\<tuo nome>\tr
 
 ## 3. Primo avvio
 
-1. Fai doppio clic su **`Avvia Tracker.bat`**.
+1. Fai doppio clic su **`comandi\windows\Avvia Tracker.bat`**.
    - Se compare *"Windows ha protetto il PC"*, clicca **Ulteriori informazioni → Esegui comunque**. È normale per gli script scaricati.
 2. Al primo avvio si apre il **Blocco note** con il file `.env`: controlla le impostazioni (per le email vedi «Promemoria e notifiche»), **salva e chiudi**.
 3. Il browser si apre da solo su **http://localhost:8080**.
@@ -78,9 +79,9 @@ La finestra nera è il server: **lasciala aperta** finché usi il tracker. Chiud
 
 ## 4. Avvio automatico (consigliato)
 
-Doppio clic su **`Attiva avvio automatico.bat`**: da adesso il tracker parte da solo, **senza finestre**, ogni volta che accedi a Windows. Ti basta aprire http://localhost:8080 (conviene metterlo tra i preferiti).
+Doppio clic su **`comandi\windows\Attiva avvio automatico.bat`**: da adesso il tracker parte da solo, **senza finestre**, ogni volta che accedi a Windows. Ti basta aprire http://localhost:8080 (conviene metterlo tra i preferiti).
 
-- Per toglierlo e fermare il tracker in background: **`Disattiva avvio automatico.bat`**.
+- Per toglierlo e fermare il tracker in background: **`comandi\windows\Disattiva avvio automatico.bat`**.
 - Con l'avvio automatico attivo non serve più usare `Avvia Tracker.bat`. Se lo apri comunque, ti avvisa che il tracker è già in esecuzione.
 - Dopo aver modificato `.env`, esegui **Disattiva** e poi **Attiva** per applicare le modifiche.
 
@@ -89,7 +90,7 @@ Doppio clic su **`Attiva avvio automatico.bat`**: da adesso il tracker parte da 
 Un PC in standby è "addormentato" e non può eseguire nessun programma, quindi il tracker (e i promemoria) si fermano finché non si risveglia. Per questo:
 
 - **Mentre il tracker è acceso, il PC non va più in standby da solo per inattività.** Lo schermo invece si spegne normalmente. È automatico; per disattivarlo metti `KEEP_AWAKE=0` nel `.env`. Nel log trovi `Standby automatico del PC: bloccato mentre il tracker è attivo`.
-- **Portatile con il coperchio chiuso:** chiudere il coperchio manda comunque in standby. Se vuoi che il tracker resti attivo anche a coperchio chiuso quando il PC è **collegato alla corrente**, fai doppio clic su **`PC sempre acceso (alla corrente).bat`**. A batteria il PC continua a sospendersi normalmente. Per tornare come prima usa `Ripristina standby PC.bat`.
+- **Portatile con il coperchio chiuso:** chiudere il coperchio manda comunque in standby. Se vuoi che il tracker resti attivo anche a coperchio chiuso quando il PC è **collegato alla corrente**, fai doppio clic su **`comandi\windows\PC sempre acceso (alla corrente).bat`**. A batteria il PC continua a sospendersi normalmente. Per tornare come prima usa `Ripristina standby PC.bat`.
 - Se il PC viene sospeso a mano (Start → Sospendi) o si scarica la batteria, alla ripresa il tracker recupera da solo: i promemoria saltati partono entro 2 ore.
 
 > Per avere il tracker **davvero sempre attivo** senza tenere acceso il PC, la soluzione è metterlo in **Docker** su un piccolo server sempre acceso: una VPS da pochi euro al mese, un mini PC, un NAS o un Raspberry Pi. Vedi "Cloud con Docker".
@@ -98,7 +99,7 @@ Un PC in standby è "addormentato" e non può eseguire nessun programma, quindi 
 
 ## Avvio per i test
 
-Per chi deve solo provare l'app: doppio clic su **`Avvia per test.bat`**. Lo script fa tutto da solo:
+Per chi deve solo provare l'app: doppio clic su **`comandi\windows\Avvia per test.bat`**. Lo script fa tutto da solo:
 
 1. **Aggiorna il codice**: controlla su GitHub se c'è una versione nuova, mostra le novità e la scarica (`git pull`). Se hai file modificati non scarica niente, per non sovrascriverli, e te lo dice. Se cambia anche lo script di avvio, riparte con la versione nuova.
 2. **Avvia la scansione scontrini**: accende Docker Desktop se è spento, avvia il servizio `vision` e aspetta che risponda. Senza Docker prosegue lo stesso, senza scansione.
@@ -115,9 +116,9 @@ Dove finisce tutto (cartella `logs`, esclusa da GitHub):
 
 Token e password del `.env` vengono oscurati (`***`) prima di scrivere i log. Le cartelle di sessione già archiviate si cancellano dopo 30 giorni (`TEST_KEEP_DAYS`), gli `.zip` restano.
 
-**Archiviare su S3 o simili**: nel `.env` metti `ARCHIVE_BACKEND=s3` e compila `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY` (e `S3_REGION`, `S3_PREFIX` se servono). Va bene qualsiasi servizio compatibile S3: AWS, MinIO, Cloudflare R2, Backblaze B2, Wasabi. Non serve installare niente. Per aggiungere un'altra destinazione basta una classe in `tools/archivio.py`.
+**Archiviare su S3 o simili**: nel `.env` metti `ARCHIVE_BACKEND=s3` e compila `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY` (e `S3_REGION`, `S3_PREFIX` se servono). Va bene qualsiasi servizio compatibile S3: AWS, MinIO, Cloudflare R2, Backblaze B2, Wasabi. Non serve installare niente. Per aggiungere un'altra destinazione basta una classe in `deploy/archivio.py`.
 
-Da terminale, anche su Mac e Linux: `python3 tools/avvio_test.py` (opzioni `--no-pull`, `--no-vision`, `--keep-vision`).
+Da terminale, anche su Mac e Linux: `python3 comandi/avvio_test.py` (oppure `comandi/linux/Avvia per test.sh`) (opzioni `--no-pull`, `--no-vision`, `--keep-vision`).
 
 ## Utenti e accessi
 
@@ -527,7 +528,7 @@ Questa versione usa automaticamente **gli stessi certificati di Windows usati da
 | Il file si chiama `.env.txt` | Il Blocco note ha aggiunto `.txt`: rinominalo in `.env`. In Esplora file attiva *Visualizza → Mostra → Estensioni nomi file* |
 | "La porta 8080 è già in uso" | Il tracker è già avviato (forse in automatico): apri http://localhost:8080. Oppure cambia `PORT` nel `.env` |
 | "Il tuo account è in attesa di approvazione" | Un admin deve approvarlo in 🛡 Utenti |
-| La pagina dice "Impossibile contattare il server" | Il tracker non è avviato: apri `Avvia Tracker.bat` |
+| La pagina dice "Impossibile contattare il server" | Il tracker non è avviato: apri `comandi\windows\Avvia Tracker.bat` (Linux: `comandi/linux/Avvia Tracker.sh`) |
 
 ---
 
@@ -660,16 +661,16 @@ curl http://localhost:8080/api/health        :: stato del server, delle notifich
 docker compose logs -f                       :: log in Docker
 ```
 
-> **Linux (e Mac):** ci sono gli stessi script dei `.bat`, con estensione `.sh`. Da terminale, nella cartella del progetto:
+> **Linux (e Mac):** ci sono gli stessi script dei `.bat`, con estensione `.sh`, in `comandi/linux`. Da terminale, nella cartella del progetto:
 >
 > | Script | Cosa fa |
 > |---|---|
-> | `./"Avvia Tracker.sh"` | avvia Tacuìn nella finestra (al primo avvio crea il `.env` e lo apre nell'editor) |
-> | `./"Avvia per test.sh"` | aggiorna il codice, accende il servizio scontrini con Docker, avvia e archivia i log |
-> | `./"Attiva avvio automatico.sh"` | parte da solo, in background, a ogni accesso (servizio systemd del tuo utente, senza sudo; senza systemd usa cron) |
-> | `./"Disattiva avvio automatico.sh"` | toglie l'avvio automatico e ferma Tacuìn |
-> | `./"PC sempre acceso (alla corrente).sh"` | alla corrente niente standby, nemmeno a coperchio chiuso (chiede la password di amministratore) |
-> | `./"Ripristina standby PC.sh"` | torna come prima |
+> | `./comandi/linux/"Avvia Tracker.sh"` | avvia Tacuìn nella finestra (al primo avvio crea il `.env` e lo apre nell'editor) |
+> | `./comandi/linux/"Avvia per test.sh"` | aggiorna il codice, accende il servizio scontrini con Docker, avvia e archivia i log |
+> | `./comandi/linux/"Attiva avvio automatico.sh"` | parte da solo, in background, a ogni accesso (servizio systemd del tuo utente, senza sudo; senza systemd usa cron) |
+> | `./comandi/linux/"Disattiva avvio automatico.sh"` | toglie l'avvio automatico e ferma Tacuìn |
+> | `./comandi/linux/"PC sempre acceso (alla corrente).sh"` | alla corrente niente standby, nemmeno a coperchio chiuso (chiede la password di amministratore) |
+> | `./comandi/linux/"Ripristina standby PC.sh"` | torna come prima |
 >
 > Dal file manager basta un doppio clic, se il tuo desktop permette di eseguire gli script (es. Ubuntu: tasto destro → *Esegui come programma*).
 

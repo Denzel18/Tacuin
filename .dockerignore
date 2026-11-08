@@ -2,7 +2,7 @@
 .env.txt
 data/
 *.md
-*.bat
+comandi/
 *.cer
 .git
 .github

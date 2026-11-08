@@ -17,7 +17,7 @@ if errorlevel 1 (
 ) else (
   echo  Fatto! Alla corrente il PC non va piu' in standby, neanche chiudendo il coperchio.
   echo  Lo schermo si spegne comunque da solo per risparmiare energia.
-  echo  Per tornare come prima: "Ripristina standby PC.bat".
+  echo  Per tornare come prima: "comandi\windows\Ripristina standby PC.bat".
 )
 echo.
 pause

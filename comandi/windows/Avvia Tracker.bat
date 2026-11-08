@@ -1,7 +1,8 @@
 @echo off
 chcp 65001 >nul
 setlocal
-cd /d "%~dp0"
+rem gli script stanno in comandi\windows: lavoro dalla cartella principale del progetto
+cd /d "%~dp0..\.."
 title Tracker - lascia aperta questa finestra
 
 rem --- Cerca Python 3.9 o superiore ---

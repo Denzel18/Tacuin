@@ -1,7 +1,8 @@
 @echo off
 chcp 65001 >nul
 setlocal
-cd /d "%~dp0"
+rem gli script stanno in comandi\windows: lavoro dalla cartella principale del progetto
+cd /d "%~dp0..\.."
 
 set "PY="
 py -3 -c "import sys; sys.exit(sys.version_info < (3, 9))" >nul 2>&1 && set "PY=py -3"
@@ -14,7 +15,7 @@ if not defined PY (
   exit /b 1
 )
 if not exist ".env" (
-  echo  Prima avvia una volta "Avvia Tracker.bat" per creare il file .env
+  echo  Prima avvia una volta "comandi\windows\Avvia Tracker.bat" per creare il file .env
   pause
   exit /b 1
 )
@@ -27,7 +28,7 @@ if not exist "%PYW%" (
   pause
   exit /b 1
 )
-set "APPDIR=%~dp0"
+set "APPDIR=%CD%\"
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$l = (New-Object -ComObject WScript.Shell).CreateShortcut([Environment]::GetFolderPath('Startup') + '\Tracker.lnk'); $l.TargetPath = $env:PYW; $l.Arguments = [char]34 + $env:APPDIR + 'server.py' + [char]34; $l.WorkingDirectory = $env:APPDIR; $l.Description = 'Tracker - server e bot Telegram'; $l.Save()"
 if errorlevel 1 (
@@ -48,6 +49,6 @@ echo.
 echo  Fatto! Il tracker ora parte da solo, in background, ogni volta che accedi a Windows.
 echo  Indirizzo: http://localhost:%PORT%
 echo  Log:       %APPDIR%data\server.log
-echo  Per toglierlo usa "Disattiva avvio automatico.bat".
+echo  Per toglierlo usa "comandi\windows\Disattiva avvio automatico.bat".
 echo.
 pause

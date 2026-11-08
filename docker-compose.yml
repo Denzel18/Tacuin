@@ -27,6 +27,6 @@ services:
     restart: unless-stopped
     environment:
       VISION_TOKEN: ${VISION_TOKEN:-}
-    # Esposto solo su questo PC: serve se il tracker gira fuori da Docker (es. Windows con Avvia Tracker.bat)
+    # Esposto solo su questo PC: serve se il tracker gira fuori da Docker (es. Windows con comandi\windows\Avvia Tracker.bat)
     ports:
       - "127.0.0.1:8090:8090"

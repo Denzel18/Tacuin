@@ -1,7 +1,8 @@
 @echo off
 chcp 65001 >nul
 setlocal
-cd /d "%~dp0"
+rem gli script stanno in comandi\windows: lavoro dalla cartella principale del progetto
+cd /d "%~dp0..\.."
 title Tracker - avvio per i test (Ctrl+C per fermare)
 
 rem Tutto tra parentesi: Windows legge il blocco intero prima di eseguirlo,
@@ -31,5 +32,5 @@ if not exist ".env" (
   echo  Ho creato il file .env: compilalo, salva e chiudi il Blocco note.
   notepad ".env"
 )
-%PY% tools\avvio_test.py %*
+%PY% comandi\avvio_test.py %*
 exit /b

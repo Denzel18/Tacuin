@@ -15,5 +15,5 @@ fi
 sudo systemctl kill -s HUP systemd-logind 2>/dev/null || true
 echo "  Fatto! Alla corrente il PC non va più in standby, neanche chiudendo il coperchio."
 echo "  Lo schermo si spegne comunque da solo per risparmiare energia."
-echo "  Per tornare come prima: «Ripristina standby PC.sh»."
+echo "  Per tornare come prima: «comandi/linux/Ripristina standby PC.sh»."
 echo

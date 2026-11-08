@@ -1,13 +1,13 @@
 """
 Avvio per i test: aggiorna il codice, accende il servizio scontrini, avvia il Tracker e registra tutto.
 
-    python tools/avvio_test.py [--no-pull] [--no-vision] [--keep-vision]
+    python comandi/avvio_test.py [--no-pull] [--no-vision] [--keep-vision]
 
 1. Codice: guarda su GitHub se c'è una versione nuova e la scarica (git pull, solo se non hai modifiche locali).
 2. Scansione scontrini: avvia Docker Desktop se serve, poi il servizio «vision» (docker compose), e aspetta che risponda.
 3. Tracker: lo avvia, mostra i log nella finestra e li scrive su file mentre arrivano (niente si perde).
 4. Alla chiusura (Ctrl+C): ferma tutto, scrive il riepilogo sessione.json, crea lo .zip della sessione e lo archivia
-   (cartella locale o S3, vedi tools/archivio.py). Se chiudi la finestra con la X, la sessione viene chiusa e
+   (cartella locale o S3, vedi deploy/archivio.py). Se chiudi la finestra con la X, la sessione viene chiusa e
    archiviata al prossimo avvio.
 
 Tutto finisce in logs/ (o TEST_LOG_DIR del .env):
@@ -35,7 +35,7 @@ import zipfile
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(BASE / "deploy"))  # archivio.py è lo stesso usato dai backup sul server
 import archivio  # noqa: E402
 
 WIN = os.name == "nt"
@@ -250,7 +250,7 @@ def aggiorna_codice(fai_pull):
     _, cambiati = run(["git", "diff", "--name-only", f"{head}..{nuovo}"])
     S.log(f"Codice aggiornato: {head} → {nuovo}")
     g.update({"commit": nuovo, "aggiornamento": f"{dietro} commit scaricati", "commit_scaricati": novita.splitlines()})
-    rilancia = any(f.startswith("tools/") for f in cambiati.splitlines())
+    rilancia = any(f.startswith("comandi/") or f == "deploy/archivio.py" for f in cambiati.splitlines())
     return nuovo, rilancia
 
 
@@ -468,7 +468,7 @@ def main():
     codice = 0
     if occupata:
         S.log(f"La porta {PORT} è già usata: probabilmente il Tracker è già acceso (avvio automatico?).", "ERROR")
-        S.log("   Chiudilo (o esegui «Disattiva avvio automatico.bat») e riavvia questo file.", "ERROR")
+        S.log("   Chiudilo (o esegui «comandi/windows/Disattiva avvio automatico.bat») e riavvia questo file.", "ERROR")
         S.info["tracker"] = {"errore": f"porta {PORT} occupata"}
         codice = 2
     else:
