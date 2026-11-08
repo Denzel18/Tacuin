@@ -404,6 +404,9 @@ cmd_up() {
 }
 
 update_files() {
+  # su questa VM Tacuìn non c'è (VM nuova, ricreata o di un'altra installazione): aggiornare non ha senso
+  remote "test -f /opt/tracker/.env" \
+    || die "Su «$VM» (progetto $PROJECT) Tacuìn non è installato: /opt/tracker non c'è. Se è la VM giusta, lancia «./deploy.sh up»."
   remote "rm -rf ~/deploy && mkdir -p ~/deploy"
   gcloud compute scp --zone "$ZONE" --project "$PROJECT" --tunnel-through-iap --quiet \
     "$DEPLOY/docker-compose.yml" "$DEPLOY/Caddyfile" "$DEPLOY/.env.example" "$DEPLOY/backup.sh" \
