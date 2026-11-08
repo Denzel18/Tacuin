@@ -1,0 +1,39 @@
+/* Tacuìn · flat — caricato in ordine dall'index (l'ordine conta per la cascata) */
+/* ---- stile asciutto: niente riquadri grigi, sezioni divise da una linea sottile centrata ---- */
+#brandHome{border:0;background:transparent;font:inherit;color:inherit;cursor:pointer;text-align:left;border-radius:10px;width:100%}
+#brandHome:hover{background:var(--hover)}
+.homelogo,.homesep{display:none}
+.head .icon{background:transparent!important;position:relative;width:40px;height:44px;border-radius:12px}
+.head .icon .pen{position:absolute;right:2px;bottom:6px;width:13px;height:13px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 1.5px var(--bg);display:grid;place-items:center}
+.head .icon .pen svg{width:7px;height:7px;fill:none;stroke:var(--on-accent);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+#main>.head{position:relative;padding-bottom:14px}
+#main>.head::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:1px;background:var(--line)}
+.tabs{background:transparent;padding:0;border-radius:0;gap:22px;margin:-4px 0 16px}
+.tabs button{padding:8px 0;border-radius:0;border-bottom:2px solid transparent;color:var(--muted);min-height:40px}
+.tabs button.on,:root[data-theme="dark"] .tabs button.on{background:transparent;box-shadow:none;border-bottom-color:var(--accent);color:var(--text);font-weight:600}
+.cards{gap:4px 18px;padding:10px 0 14px;position:relative}
+.cards::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:1px;background:var(--line)}
+.cards>.card{background:transparent;border:0;border-radius:0;padding:4px 2px}
+.tip{background:transparent;border:0;border-radius:0;position:relative;padding:4px 2px 14px}
+.tip::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:1px;background:var(--line)}
+.tip .tip-i{color:var(--topo)}
+.chip:has(input:checked){border-color:var(--topo);background:color-mix(in srgb,var(--topo) 12%,transparent)}
+.seg button.on{background:var(--text);color:var(--bg)}
+/* sezioni senza riquadri: titolo, contenuto e una linea sottile sotto, centrata con piccoli margini */
+.pnl{background:transparent!important;border:0!important;border-radius:0!important;padding:6px 2px 18px!important;position:relative}
+.pnl::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:1px;background:var(--line)}
+.pnl[hidden]{display:none!important}
+.pnl h2{font-size:16px}
+.pnl h2 .i{display:none}
+.pnl .crs:first-of-type{border-top:0}
+.cwd.istoday .cdt{font-weight:700}
+@media (max-width:760px){
+  .homelogo{display:grid;place-items:center;width:40px;height:44px;border:0;background:transparent;padding:0;margin-left:-6px;flex:none;color:var(--text);border-radius:12px}
+  .homelogo .tmark{width:28px;height:28px}
+  .homelogo .tmark rect:nth-of-type(2){fill:var(--bg)}
+  .homesep{display:block;width:1px;height:20px;background:var(--line);margin:0 -2px;flex:none}
+  .head{gap:8px}
+  .cardt tr{background:transparent!important;border:0!important;border-radius:0!important;border-bottom:1px solid var(--line)!important;margin:0!important;padding:12px 2px!important}
+  .cardt .cell,.cardt td select{background:transparent!important;border-radius:0!important;border-bottom:1px solid var(--line)!important;padding-left:2px!important}
+}
+

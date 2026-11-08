@@ -11,6 +11,7 @@ Funziona su Windows, macOS, Linux e in Docker.
 Configurazione nel file .env (vedi .env.example) oppure tramite variabili d'ambiente.
 """
 import base64
+import hashlib
 import hmac
 import html
 import json
@@ -841,8 +842,8 @@ class Handler(BaseHTTPRequestHandler):
     STATIC_TYPES = {".js": "application/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".png": "image/png",
                     ".svg": "image/svg+xml", ".woff2": "font/woff2"}
 
-    def static(self, path):
-        base = (WEB_DIR / "vendor").resolve()
+    def static(self, path, folder="vendor"):
+        base = (WEB_DIR / folder).resolve()
         f = (WEB_DIR / path.lstrip("/")).resolve()
         if base not in f.parents or not f.is_file() or f.suffix not in self.STATIC_TYPES:
             raise HTTPError(404, "non trovato")
@@ -860,6 +861,8 @@ class Handler(BaseHTTPRequestHandler):
             url = urllib.parse.urlparse(self.path)
             if method == "GET" and url.path.startswith("/vendor/"):
                 return self.static(url.path)
+            if method == "GET" and url.path.startswith("/css/"):  # stili dell'app, uno per argomento (il link porta ?v=versione)
+                return self.static(url.path, "css")
             if method == "GET" and url.path.startswith("/tiles/"):
                 m = TILE_RE.match(url.path)
                 if not m:
@@ -907,7 +910,7 @@ class Handler(BaseHTTPRequestHandler):
     # --- pagine e stato generale
     def GET_index(self, url):
         self._nonce = secrets.token_urlsafe(18)
-        page = (WEB_DIR / "index.html").read_bytes().replace(b"<script>", f'<script nonce="{self._nonce}">'.encode())
+        page = (WEB_DIR / "index.html").read_bytes().replace(b"<script>", f'<script nonce="{self._nonce}">'.encode()).replace(b"ASSETV", asset_version())
         self._send(200, page, "text/html; charset=utf-8")
 
     GET_index_html = GET_index
@@ -1126,7 +1129,7 @@ class Handler(BaseHTTPRequestHandler):
         self._json(200, {"ok": True, "health_consent": hc})
 
     def GET_foods_js(self, url):  # tabella degli alimenti generici (si carica solo aprendo Alimentazione)
-        self._send(200, (WEB_DIR / "foods.js").read_bytes(), "application/javascript; charset=utf-8", {"Cache-Control": "public, max-age=86400"})
+        self._send(200, (WEB_DIR / "foods.js").read_bytes(), "application/javascript; charset=utf-8", {"Cache-Control": "public, max-age=604800"})
 
     def GET_sw_js(self, url):  # service worker delle notifiche: deve stare nella radice del sito
         self._send(200, (WEB_DIR / "sw.js").read_bytes(), "application/javascript; charset=utf-8", {"Cache-Control": "no-cache"})
@@ -4256,6 +4259,22 @@ def garmin_auto(now):
 # ---------------------------------------------------------------- prezzi di borsa e piani di accumulo
 QUOTES_ENV_OFF = (os.getenv("QUOTES") or "").strip().lower() in ("off", "0", "no", "false")
 QUOTES = quotes_mod.Quotes(DATA_DIR / "quotes-cache.json")
+
+
+_ASSET_V = {}
+
+
+def asset_version():
+    """Impronta di stili e tabella alimenti: cambia a ogni aggiornamento, così il browser non usa file vecchi."""
+    files = sorted((WEB_DIR / "css").glob("*.css")) + [WEB_DIR / "foods.js"]
+    key = tuple((f.name, f.stat().st_mtime_ns, f.stat().st_size) for f in files if f.exists())
+    if _ASSET_V.get("k") != key:
+        h = hashlib.sha256()
+        for f in files:
+            if f.exists():
+                h.update(f.read_bytes())
+        _ASSET_V.update(k=key, v=h.hexdigest()[:12].encode())
+    return _ASSET_V["v"]
 
 
 FOOD_ENV_OFF = (os.getenv("FOOD") or "").strip().lower() in ("off", "0", "no", "false")

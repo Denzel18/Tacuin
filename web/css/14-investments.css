@@ -1,0 +1,92 @@
+/* Tacuìn · investments — caricato in ordine dall'index (l'ordine conta per la cascata) */
+/* ---------- investimenti ---------- */
+.ikpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:14px 0 18px;position:relative;margin-bottom:18px}
+.ikpi::after,.ibox.isec::after,.igrid::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:1px;background:var(--line)}
+.ikpi>div{display:flex;flex-direction:column;gap:2px;padding:2px 18px;border-left:1px solid var(--line);min-width:0}
+.ikpi>div:first-child{border-left:0;padding-left:2px}
+.ikpi span{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ikpi b{font-size:26px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ikpi b em{font-style:normal;font-size:15px;font-weight:500;color:var(--muted)}
+.ikpi small{font-size:13px;color:var(--muted)}
+.ikpi .pos b,.ikpi .pos small{color:var(--pos)}.ikpi .neg b,.ikpi .neg small{color:var(--danger)}
+.igrid{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,1fr);gap:36px;position:relative;padding-bottom:18px;margin-bottom:18px}
+.ibox{min-width:0;position:relative}
+.ibox.isec{padding-bottom:18px;margin-bottom:18px}
+.ibox-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;font-size:13.5px}
+.ibox-h>b{font-size:16px}
+.ileg{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+.ileg i{display:inline-block;width:14px}
+.ileg .lv{height:3px;border-radius:2px;background:var(--accent)}
+.ileg .li{border-top:2px dashed var(--topo)}
+.ileg .le{height:3px;border-radius:2px;background:var(--accent);opacity:.45}
+.iseg{display:inline-flex;gap:2px}
+.iseg button{background:transparent;border:0;border-bottom:2px solid transparent;border-radius:0;padding:4px 9px;color:var(--muted);min-height:32px}
+.iseg button.on{border-bottom-color:var(--accent);color:var(--text);font-weight:600}
+.ichart{position:relative;min-height:170px}
+.ichart svg{display:block;touch-action:pan-y}
+.ichart .ax{font-size:11px;fill:var(--muted);font-family:inherit}
+.itip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px 10px;font-size:12.5px;display:flex;flex-direction:column;gap:1px;box-shadow:0 6px 18px rgba(0,0,0,.08);min-width:140px}
+.itip[hidden]{display:none}
+.ialloc{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding-top:8px}
+.idonut .dv{font-size:4.4px;font-weight:700;fill:var(--text);font-family:inherit}
+.idonut .dl{font-size:2.9px;fill:var(--muted);font-family:inherit}
+.ilegend{display:flex;flex-direction:column;gap:9px;font-size:14px;flex:1;min-width:150px}
+.ilegend span{display:flex;align-items:center;gap:8px}
+.ilegend i{width:10px;height:10px;border-radius:3px;flex:none}
+.ilegend b{margin-left:auto;font-variant-numeric:tabular-nums}
+.iplans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 36px}
+.iplan{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);min-width:0}
+.iplan-b{flex:1;display:flex;align-items:center;gap:14px;padding:12px 0;background:transparent;border:0;border-radius:0;text-align:left;min-width:0;color:inherit}
+.iplan-b .tx{flex:1;display:flex;flex-direction:column;min-width:0}
+.iplan-b small{color:var(--muted);font-size:13px}
+.iplan-b .r{font-variant-numeric:tabular-nums}
+.itype{font-size:11px;font-weight:700;color:var(--accent-t);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);border-radius:6px;padding:2px 6px;flex:none}
+.iplan-pay{min-height:36px;padding:0 12px}
+.itab{width:100%}
+.itab td{border-right:0;padding:10px 8px;font-variant-numeric:tabular-nums}
+.itab tbody tr{cursor:pointer}
+.itab td small{display:block;font-size:12.5px;color:var(--muted);font-weight:400}
+.itab td small.pos{color:var(--pos)}.itab td small.neg{color:var(--danger)}
+.itab td.num{text-align:right;white-space:nowrap}
+.itab td.it b{font-weight:600}
+.itab td.it{max-width:340px}
+.itab td.it small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.itab td.isp{width:80px;padding:4px 6px}
+.itab td.isp svg{display:block}
+.ifoot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;padding-top:10px}
+.ivf .fl{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500}
+.ivf .fl .field{color:var(--text)}
+.ivf .field{box-sizing:border-box;height:46px;min-height:46px;width:100%;padding:0 12px;border-radius:11px;font-size:16px;line-height:44px}
+.ivf select.field{-webkit-appearance:none;appearance:none;padding-right:34px;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%238b8580' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 13px center}
+.ivf #pcA{font-size:18px!important;font-weight:600!important}
+.ivf .ivcur{position:relative;display:block}
+.ivf .ivcur .field{padding-right:34px}
+.ivf .ivcur>span{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none}
+.ivf .ivg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ivf .ivrow{display:flex;align-items:center;gap:8px}
+.ivf .ivrow .field{flex:1;min-width:0}
+.ivf .ivrow button{flex:none;min-height:44px;padding:0 16px;border:1px solid var(--line);border-radius:11px}
+.ivf .ivisin{display:flex;flex-direction:column;gap:8px}
+.ivf #ivIsin{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;text-transform:uppercase}
+.ivsw{display:flex;gap:12px;align-items:flex-start;font-size:15px;line-height:1.4}
+.ivsw>span{display:flex;flex-direction:column;gap:2px}
+.ivsw small{font-size:13px}
+.ivchart svg{display:block;width:100%}
+.ivch-h{display:flex;gap:10px;align-items:baseline;font-size:13px;margin-bottom:4px;flex-wrap:wrap}
+@media (max-width:760px){
+  .ikpi{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 0}
+  .ikpi>div:nth-child(3){border-left:0;padding-left:2px}
+  .ikpi b{font-size:21px}
+  .igrid{grid-template-columns:minmax(0,1fr);gap:22px}
+  .iplans{grid-template-columns:minmax(0,1fr)}
+  .itab td{padding:10px 4px}
+  .itab td.it{max-width:none}
+  .itab td.it small{white-space:normal}
+  .itab td.num small{font-size:11.5px}
+  .itab th:last-child,.itab td.del{display:none}
+  .itab td.num b{font-size:14.5px}
+  .ialloc{justify-content:center}
+}
+

@@ -257,6 +257,16 @@ Dall'assistente: **diario: oggi giornata lenta e bella** aggiunge il testo alla 
 
 ## Cestino
 
+### Struttura del codice
+
+- `server.py` — server HTTP (solo libreria standard), API, notifiche, attività pianificate; moduli a parte per agenda, assistente (`brain.py`, `nutri.py`), investimenti (`invest.py`, `quotes.py`), alimenti (`food.py`).
+- `web/index.html` — l'app (una pagina); gli stili sono in `web/css/`, un file per argomento, caricati in ordine numerico (l'ordine conta). Il server aggiunge ai link una versione calcolata dal contenuto, così dopo un aggiornamento il browser non usa file vecchi.
+- `web/foods.js` — tabella degli alimenti generici.
+
+### Accessibilità
+
+Il menu si usa da tastiera (Tab, Invio), c'è «Vai al contenuto», le finestre trattengono il focus e lo restituiscono alla chiusura, i colori rispettano il contrasto minimo WCAG AA (4,5:1) in tutti e quattro i temi, le animazioni si riducono se il sistema lo chiede e con lo zoom alto la barra in basso si rimpicciolisce. Il controllo automatico (axe-core) su tutte le pagine e i temi non trova violazioni.
+
 ### Alimentazione
 
 Un diario per momenti della giornata (colazione, spuntini, pranzo, cena: li rinomini, aggiungi o togli). Per registrare un alimento **basta il nome**: Tacuìn ha una tabella interna degli alimenti più comuni con porzioni e valori medi, e per i **prodotti confezionati** cerca per nome o codice a barre su **Open Food Facts** (banca dati libera, gratuita, senza chiave; il root la spegne da Impostazioni o con `FOOD=off`). I **pasti salvati** raggruppano gli alimenti che mangi spesso e possono comparire da soli nel diario, «da confermare». Il pulsante **+ 1 bicchiere** riempie l'abitudine **Acqua**; le abitudini **dal diario** (meno zuccheri, 5 porzioni di frutta e verdura, niente alcol, niente fritti) si segnano da sole. Calorie e nutrienti sono spenti all'inizio: si accendono dalle impostazioni dell'Alimentazione.
