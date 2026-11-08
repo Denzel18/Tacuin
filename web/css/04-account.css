@@ -52,3 +52,10 @@ body.authing aside,body.authing main,body.authing .mbar,body.authing #fab,body.a
 .st-active{color:var(--topo)}.st-pending{color:#c58a1a}.st-disabled,.st-rejected{color:var(--muted)}
 .boxed{border:1px solid var(--line);border-radius:12px;overflow:auto}
 .linkbox{display:flex;gap:8px;align-items:center;background:var(--hover);border-radius:8px;padding:8px 10px;font-size:12px;word-break:break-all}
+/* richiesta da approvare: menu del ruolo e pulsanti della stessa altezza e forma */
+.req .req-role{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
+.req .req-role select.field,.req>button{box-sizing:border-box;height:40px;min-height:40px;border-radius:10px;font-size:14px;font-weight:500}
+.req .req-role select.field{color:var(--text);padding:0 32px 0 12px;-webkit-appearance:none;appearance:none;cursor:pointer;
+  background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%238b8580' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center}
+.req>button{padding:0 18px}
+@media (max-width:760px){.req .req-role select.field{flex:1}}

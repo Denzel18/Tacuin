@@ -5290,7 +5290,7 @@ async function renderUsers() {
       <div class="req" data-u="${u.id}">
         <span class="av" style="background:hsl(${hue(u.name.length)} 50% 48%)">${esc(u.name.slice(0, 1).toUpperCase())}</span>
         <span class="who"><b>${esc(u.name)}</b><small>${esc(u.email)} · richiesto ${esc(fmtWhen(u.created))}${u.source ? ' · da ' + esc(u.source) : ''}</small></span>
-        <label class="muted" style="font-size:13px;display:flex;gap:6px;align-items:center">Ruolo <select class="field" data-role style="padding:4px 8px">${roleOpts}</select></label>
+        <label class="req-role">Ruolo <select class="field" data-role>${roleOpts}</select></label>
         <button class="ghost" data-act="reject">Rifiuta</button>
         <button class="primary" data-act="approve">Approva</button>
       </div>`).join('')}</div>` : ''}
