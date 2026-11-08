@@ -28,11 +28,25 @@ tfvar() {
   [ -n "$v" ] || v=$(awk -v n="$1" '$1=="variable" && $2=="\""n"\"" {f=1} f && $1=="default" {gsub(/"/,"",$3); print $3; exit}' "$HERE/variables.tf")
   printf '%s' "$v"
 }
+# Cloud Shell (soprattutto dall'app per telefono o dopo tanto tempo) può ripartire senza account collegato:
+# in quel caso gcloud dice «You do not currently have an active account selected». Qui si rifà il login.
+login() {
+  if gcloud auth print-access-token >/dev/null 2>&1; then return; fi
+  echo
+  echo "  Cloud Shell non è collegato al tuo account Google (succede spesso dall'app per telefono)."
+  echo "  1) tocca il link che compare qui sotto e scegli l'account del progetto"
+  echo "  2) consenti l'accesso, copia il codice che ti mostra Google"
+  echo "  3) torna qui, incollalo e premi Invio"
+  echo
+  gcloud auth login --update-adc --no-launch-browser || die "login non riuscito: riprova, oppure apri Cloud Shell dal browser (shell.cloud.google.com)"
+}
 target() {
-  [ -f "$HERE/terraform.tfvars" ] || die "manca deploy/gcp/terraform.tfvars: lancia prima «./deploy.sh up»"
+  [ -f "$HERE/terraform.tfvars" ] || die "manca deploy/gcp/terraform.tfvars: lancia prima «./deploy.sh up» (se sei su un altro dispositivo, controlla di essere nella stessa cartella: cd ~/Tacuin/deploy/gcp)"
   need gcloud
+  login
   PROJECT=$(tfvar project_id); ZONE=$(tfvar zone); VM=$(tfvar name)
   [[ "$ZONE" =~ ^[a-z]+-[a-z]+[0-9]+-[a-z]$ ]] || die "zona non valida in terraform.tfvars: «$ZONE»"
+  gcloud config set project "$PROJECT" >/dev/null 2>&1 || true
 }
 
 tfout() { terraform -chdir="$HERE" output -raw "$1" 2>/dev/null; }
@@ -165,9 +179,7 @@ cmd_up() {
   local PID APIS MISSING=()
   PID=$(grep -E '^\s*project_id' "$HERE/terraform.tfvars" | sed -E 's/.*"(.*)".*/\1/')
   APIS="cloudresourcemanager serviceusage iam compute iap oslogin storage logging monitoring"
-  gcloud auth print-access-token >/dev/null 2>&1 || {
-    echo "  Cloud Shell ha perso l'accesso al tuo account: si apre il login (segui il link e incolla il codice)."
-    gcloud auth login --update-adc || die "login non riuscito"; }
+  login
   local ON; ON=$(gcloud services list --enabled --project "$PID" --format='value(config.name)' 2>/dev/null || true)
   for a in $APIS; do grep -qx "$a.googleapis.com" <<<"$ON" || MISSING+=("$a.googleapis.com"); done
   if [ ${#MISSING[@]} -gt 0 ]; then
