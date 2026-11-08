@@ -606,10 +606,10 @@ Cosa viene creato: una VM **e2-small** (2 GB) a **Milano** (`europe-west8`) con 
 2. Apri **Cloud Shell** (icona `>_` in alto a destra): ha già `gcloud`, `terraform` e `git`.
 3. ```bash
    git clone https://github.com/Denzel18/tacuin.git && cd tacuin/deploy/gcp
-   ./deploy.sh up       # la prima volta chiede l'ID del progetto e crea terraform.tfvars
+   ./deploy.sh up
    ```
-   Lo script mostra il piano di Terraform (rispondi `yes`), poi chiede dominio, email e la casella email (Aruba o Brevo) e salva tutto in `deploy/gcp/app.env` (fuori da GitHub). **Salva nel gestore di password la passphrase dei backup** che ti mostra. Infine chiede un token GitHub con il solo permesso `read:packages`.
-4. **DNS**: record **A** del tuo dominio → l'IP che lo script stampa alla fine. Dopo qualche minuto il sito è su `https://` con il certificato.
+   Lo script chiede solo **email e password del root**: il progetto lo prende da Cloud Shell, l'infrastruttura la crea senza chiedere conferma (solo la prima volta), le immagini sono quelle pubbliche del progetto. Alla fine stampa un indirizzo provvisorio con HTTPS, del tipo `https://34-154-57-95.sslip.io` (il servizio gratuito sslip.io risponde con l'IP scritto nel nome), e la **passphrase dei backup: salvala nel gestore di password** (è anche in `deploy/gcp/app.env`, fuori da GitHub).
+4. **Tutto il resto dall'app**: apri l'indirizzo, entra come root e segui la procedura guidata: email per inviti e promemoria, dominio, dati del titolare, nome utente. Per il dominio crea nel DNS un record **A** → l'IP della VM, poi aggiungilo da **Impostazioni → Server → Dominio**: il primo dominio che aggiungi diventa quello principale al posto dell'indirizzo provvisorio.
 5. Da quel momento:
 
 | Comando (in Cloud Shell, da `deploy/gcp`) | Cosa fa |

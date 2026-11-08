@@ -2144,7 +2144,8 @@ async function setupSheet() {
   const legalOk = lg && Object.values(lg.saved || {}).some(Boolean) || lg && Object.values(lg.env || {}).some(Boolean);
   const rows = [
     ['email', 'mail', 'Email', srv?.configured ? 'Configurata' : 'Senza email non partono inviti, promemoria e link per la password', srv?.configured],
-    ['domain', 'globe', 'Dominio', srv?.domains?.length ? srv.domains.map(d => d.name).join(', ') : 'L\'indirizzo del sito e il certificato HTTPS', !!srv?.domains?.length],
+    ...(() => { const real = (srv?.domains || []).filter(d => !d.provisional), tmp = (srv?.domains || []).find(d => d.provisional);
+      return [['domain', 'globe', 'Dominio', real.length ? real.map(d => d.name).join(', ') : tmp ? `Ora usi l'indirizzo provvisorio ${tmp.name}: aggiungi il tuo` : 'L\'indirizzo del sito e il certificato HTTPS', !!real.length]]; })(),
     ['legal', 'shield', 'Dati del titolare', legalOk ? 'Inseriti' : 'Il tuo nome ed email per l\'informativa privacy', legalOk],
     ['handle', 'user', 'Il tuo @nome utente', USER.handle ? '@' + USER.handle : 'Per farti trovare dagli altri utenti', !!USER.handle]];
   openSheet(`<div class="sh-h"><b class="fs-t" style="flex:1;font-size:18px;padding-left:8px">Benvenuto nel tuo Tacuìn</b><button type="button" class="more" data-x aria-label="Chiudi">${ico('x', 22)}</button></div>
@@ -2225,7 +2226,7 @@ async function domainSheet() {
     <div class="sh-h"><b class="fs-t" style="flex:1;font-size:18px;padding-left:8px">Dominio</b><button type="button" class="more" data-x aria-label="Chiudi">${ico('x', 22)}</button></div>
     <div class="sh-b xs-b">
       <div class="glab" style="padding:0">Indirizzi attivi</div>
-      <div class="srv-doms">${j.domains.length ? j.domains.map(d => `<div class="srv-dom"><span><b>${esc(d.name)}</b><small>${d.primary ? 'Principale · usato nei link delle email' : 'Attivo'}${d.env ? ' · dal file .env' : ''}</small></span>
+      <div class="srv-doms">${j.domains.length ? j.domains.map(d => `<div class="srv-dom"><span><b>${esc(d.name)}</b><small>${d.primary ? 'Principale · usato nei link delle email' : 'Attivo'}${d.provisional ? ' · provvisorio, finché non aggiungi il tuo dominio' : d.env ? ' · dal file .env' : ''}</small></span>
         ${d.primary ? '' : `<button type="button" class="ghost" data-prim="${esc(d.name)}">Rendi principale</button>`}${d.primary || d.env ? '' : `<button type="button" class="more" data-rm="${esc(d.name)}" aria-label="Togli ${esc(d.name)}">${ico('trash', 18)}</button>`}</div>`).join('<div class="srv-sep"></div>')
         : '<p class="muted" style="margin:0">Nessun dominio: Tacuìn risponde solo al suo indirizzo IP.</p>'}</div>
       <div class="xs-line"></div>

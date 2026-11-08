@@ -539,6 +539,11 @@ def env_domain():
     return urllib.parse.urlparse(PUBLIC_URL).hostname or ""
 
 
+def provisional(d):
+    """Indirizzo provvisorio dell'installazione (es. 34-154-57-95.sslip.io): serve solo finché non aggiungi il tuo dominio."""
+    return bool(re.search(r"\.(sslip|nip)\.io$", d or ""))
+
+
 def all_domains():
     """Domini serviti: quello del file .env più quelli aggiunti dall'interfaccia."""
     out = [env_domain()] if env_domain() else []
@@ -983,7 +988,7 @@ class Handler(BaseHTTPRequestHandler):
         prim = c.get("primary") or env_domain()
         self._json(200, {"smtp": smtp, "source": mailer.source, "configured": mailer.configured,
                          "last_ok": mailer.last_ok, "error": mask_emails(mailer.last_error),
-                         "domains": [{"name": d, "primary": d == prim, "env": d == env_domain()} for d in all_domains()],
+                         "domains": [{"name": d, "primary": d == prim, "env": d == env_domain(), "provisional": provisional(d)} for d in all_domains()],
                          "ips": sorted(server_ips()), "quotes": quotes_on(), "quotes_env_off": QUOTES_ENV_OFF, "food": food_on()})
 
     def POST_api_admin_server_food(self, url):
@@ -1089,6 +1094,10 @@ class Handler(BaseHTTPRequestHandler):
                 raise HTTPError(400, "Al massimo 10 indirizzi.")
             conf["domains"] = doms + [d]
             msg = f"Fatto: {d} punta qui ed è attivo. Il certificato HTTPS arriva al primo accesso."
+            cur = conf.get("primary") or env_domain()
+            if not cur or provisional(cur):  # il primo dominio vero prende il posto dell'indirizzo provvisorio
+                conf["primary"] = d
+                msg += f" Da ora i link nelle email usano {d}."
         elif act == "primary":
             if d not in all_domains():
                 raise HTTPError(404, "Indirizzo non attivo.")

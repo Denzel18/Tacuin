@@ -3,7 +3,7 @@
 #
 # Si usa da Google Cloud Shell (nel browser, ha già gcloud; Terraform, se manca, lo installa da solo) oppure da un PC con gcloud.
 #
-#   ./deploy.sh up        crea/aggiorna tutto e avvia l'app (la prima volta fa qualche domanda)
+#   ./deploy.sh up        crea/aggiorna tutto e avvia l'app (la prima volta chiede solo email e password del root)
 #   ./deploy.sh update    scarica l'ultima versione dell'app e la riavvia (con backup prima)
 #   ./deploy.sh ssh       entra nella VM (tramite IAP: la porta 22 non è aperta su internet)
 #   ./deploy.sh logs      log dell'app in tempo reale (Ctrl+C per uscire)
@@ -89,16 +89,6 @@ ask() {  # ask VAR "domanda" [predefinito] [segreto]
   printf -v "$1" '%s' "${v:-$def}"
 }
 
-ask_domain() {  # chiede finché è un nome di dominio valido; accetta anche «https://tacuin.tuodominio.it/»
-  local d
-  while :; do
-    ask d "Indirizzo del sito, senza https (es. tacuin.tuodominio.it)"
-    d=${d#http://}; d=${d#https://}; d=${d%%/*}; d=$(printf '%s' "$d" | tr 'A-Z' 'a-z' | tr -d ' ')
-    if [[ "$d" =~ ^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$ ]]; then DOMAIN=$d; return; fi
-    echo "  «$d» non è un dominio valido, riprova."
-  done
-}
-
 ask_email() {  # ask_email VAR "domanda"
   local e
   while :; do
@@ -109,27 +99,27 @@ ask_email() {  # ask_email VAR "domanda"
 }
 
 make_env() {
-  say "Configurazione dell'app (una volta sola: le risposte restano in deploy/gcp/app.env)"
-  local DOMAIN ROOT_EMAIL ROOT_NAME ROOT_PASSWORD SMTP_USER SMTP_PASSWORD SMTP_FROM PASS
-  ask_domain
-  ask_email ROOT_EMAIL "La tua email (account root)"
-  ask ROOT_NAME "Il tuo nome"
-  ask ROOT_PASSWORD "Password del root (vuoto = la creo io)" "" s
-  [ -n "$ROOT_PASSWORD" ] || { ROOT_PASSWORD=$(openssl rand -base64 18 | tr -d '/+=' | cut -c1-20); GEN_PW=1; }
-  local SMTP_HOST SMTP_PORT SMTP_SECURITY MAILSRV
-  echo "  Email: 1) casella Aruba   2) Brevo   3) nessuna email"
-  ask MAILSRV "Scelta" "1"
-  case "$MAILSRV" in
-    1) SMTP_HOST=smtps.aruba.it; SMTP_PORT=465; SMTP_SECURITY=ssl
-       ask_email SMTP_USER "Indirizzo della casella Aruba (es. noreply@tuodominio.it)"
-       ask SMTP_PASSWORD "Password della casella" "" s
-       SMTP_FROM=$SMTP_USER ;;   # Aruba spedisce solo a nome della casella con cui accedi
-    2) SMTP_HOST=smtp-relay.brevo.com; SMTP_PORT=587; SMTP_SECURITY=starttls
-       ask SMTP_USER "Utente SMTP Brevo"
-       ask SMTP_PASSWORD "SMTP key di Brevo" "" s
-       ask SMTP_FROM "Mittente (dominio verificato su Brevo)" "noreply@$DOMAIN" ;;
-    *) SMTP_HOST=; SMTP_PORT=587; SMTP_SECURITY=starttls; SMTP_USER=; SMTP_FROM=noreply@$DOMAIN ;;
-  esac
+  say "Account root (il resto lo configuri dall'app)"
+  echo "  Entrerai in Tacuìn con questa email e questa password. Email, dominio, dati del titolare"
+  echo "  e nome utente li imposti poi dall'app: al primo accesso una procedura guidata te li chiede."
+  local DOMAIN ROOT_EMAIL ROOT_NAME ROOT_PASSWORD PW2 PASS IP
+  ask_email ROOT_EMAIL "Email del root (è il tuo nome utente per entrare)"
+  while :; do
+    ask ROOT_PASSWORD "Password del root (almeno 10 caratteri; vuoto = la creo io)" "" s
+    if [ -z "$ROOT_PASSWORD" ]; then ROOT_PASSWORD=$(openssl rand -base64 18 | tr -d '/+=' | cut -c1-20); GEN_PW=1; break; fi
+    [ ${#ROOT_PASSWORD} -ge 10 ] || { echo "  Troppo corta, riprova."; continue; }
+    ask PW2 "Ripeti la password" "" s
+    [ "$ROOT_PASSWORD" = "$PW2" ] && break
+    echo "  Le due password non coincidono, riprova."
+  done
+  # il nome si cambia dal Profilo: intanto uso la parte prima della @ (mario.rossi → Mario Rossi)
+  ROOT_NAME=$(printf '%s' "${ROOT_EMAIL%%@*}" | tr '._-' '   ' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)} 1')
+  # indirizzo provvisorio con HTTPS vero: sslip.io risponde con l'IP scritto nel nome (34-154-57-95.sslip.io → 34.154.57.95).
+  # Il tuo dominio lo aggiungi dall'app (Impostazioni → Server → Dominio) e diventa quello principale.
+  IP=$(tfout ip 2>/dev/null || true)
+  [[ "$IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "non trovo l'IP della VM (terraform output ip): rilancia «./deploy.sh up»"
+  DOMAIN="${IP//./-}.sslip.io"
+  local SMTP_HOST="" SMTP_PORT=587 SMTP_SECURITY=starttls SMTP_USER="" SMTP_PASSWORD="" SMTP_FROM=""
   PASS=$(openssl rand -base64 33 | tr -d '\n')
   local BUCKET; BUCKET=$(tfout backup_bucket 2>/dev/null || true)
   umask 077
@@ -139,7 +129,7 @@ make_env() {
   V_ROOT_PASSWORD=$ROOT_PASSWORD V_SMTP_HOST=$SMTP_HOST V_SMTP_PORT=$SMTP_PORT \
   V_SMTP_SECURITY=$SMTP_SECURITY V_SMTP_USER=$SMTP_USER V_SMTP_PASSWORD=${SMTP_PASSWORD:-} V_SMTP_FROM=$SMTP_FROM \
   V_BACKUP_PASSPHRASE=$PASS V_BACKUP_GCS_BUCKET=$BUCKET \
-  V_PUBLIC_IP="$(tfout ip 2>/dev/null || true)" V_VISION_URL=http://vision:8090 V_VISION_TOKEN="$(openssl rand -hex 24)" \
+  V_PUBLIC_IP="$IP" V_VISION_URL=http://vision:8090 V_VISION_TOKEN="$(openssl rand -hex 24)" \
   python3 - "$DEPLOY/.env.example" "$SECRETS.tmp" <<'EOPY2'
 import os, sys
 vals = {k[2:]: v for k, v in os.environ.items() if k.startswith("V_")}
@@ -155,19 +145,23 @@ EOPY2
   grep -q '^DOMAIN=..*' "$SECRETS.tmp" || { rm -f "$SECRETS.tmp"; die "non sono riuscito a scrivere la configurazione"; }
   mv "$SECRETS.tmp" "$SECRETS"
   chmod 600 "$SECRETS"
-  echo
   echo "  Salvato in $SECRETS (solo tu puoi leggerlo)."
-  [ -z "${GEN_PW:-}" ] || echo "  Password del root generata: $ROOT_PASSWORD   ← salvala nel gestore di password"
-  echo "  Passphrase dei backup:      $PASS"
-  echo "  ↑ SALVALA nel gestore di password: senza, i backup cifrati non si aprono."
-  read -rp "  Premi Invio quando le hai salvate… " _
+  [ -z "${GEN_PW:-}" ] || ROOT_PW_SHOW=$ROOT_PASSWORD   # la mostro alla fine, insieme all'indirizzo
+  BACKUP_PASS_SHOW=$PASS
 }
 
 cmd_up() {
   need gcloud; need openssl; ensure_terraform
   if [ ! -f "$HERE/terraform.tfvars" ]; then
     local PID
-    ask PID "ID del progetto Google Cloud" "$(gcloud config get-value project 2>/dev/null || true)"
+    login
+    PID=$(gcloud config get-value project 2>/dev/null || true)
+    if [ -z "$PID" ]; then   # un solo progetto sull'account: è quello
+      local ALL; ALL=$(gcloud projects list --format='value(projectId)' 2>/dev/null || true)
+      [ "$(grep -c . <<<"$ALL")" = 1 ] && PID=$ALL
+    fi
+    [ -n "$PID" ] || ask PID "ID del progetto Google Cloud (lo trovi in alto nella console, es. tacuin-123456)"
+    echo "  Progetto Google Cloud: $PID"
     [[ "$PID" =~ ^[a-z][a-z0-9-]{4,28}[a-z0-9]$ ]] || die "«$PID» non sembra un ID di progetto (tutto minuscolo, es. tacuin-123456)"
     sed "s|^project_id = \"[^\"]*\"|project_id = \"$PID\"|" "$HERE/terraform.tfvars.example" > "$HERE/terraform.tfvars"
     echo "  Creato deploy/gcp/terraform.tfvars (lo puoi modificare per cambiare zona, VM, ecc.)"
@@ -188,7 +182,11 @@ cmd_up() {
       || die "Google ha rifiutato l'attivazione dei servizi: il motivo è nel messaggio qui sopra (fatturazione, permessi o progetto sbagliato)"
   fi
   terraform -chdir="$HERE" init -input=false >/dev/null  # senza -upgrade: le versioni restano quelle del file .terraform.lock.hcl
-  terraform -chdir="$HERE" apply -input=false
+  if terraform -chdir="$HERE" state list 2>/dev/null | grep -q google_compute_instance.vm; then
+    terraform -chdir="$HERE" apply -input=false          # infrastruttura esistente: mostra le modifiche e chiede conferma
+  else
+    terraform -chdir="$HERE" apply -input=false -auto-approve   # prima installazione: crea e basta
+  fi
   target
   [ "$(vm_status)" = RUNNING ] || { echo "  La VM era spenta: la accendo"; gcloud compute instances start "$VM" --zone "$ZONE" --project "$PROJECT" --quiet; }
 
@@ -224,7 +222,9 @@ cmd_up() {
   say "5/6 Accesso alle immagini su GitHub"
   set_image
   if remote "cd /opt/tracker && sudo docker compose pull -q tracker" >/dev/null 2>&1; then
-    echo "  immagini pubbliche: nessun accesso da configurare"
+    echo "  immagini scaricate: nessun accesso da configurare"
+  elif use_public_image && remote "cd /opt/tracker && sudo docker compose pull -q tracker" >/dev/null 2>&1; then
+    echo "  immagini pubbliche del progetto ($PUBLIC_IMAGE): nessun accesso da configurare"
   elif remote "sudo test -f /root/.docker/config.json && sudo grep -q ghcr.io /root/.docker/config.json"; then
     echo "  già fatto"
   else
@@ -255,13 +255,20 @@ cmd_up() {
   IP=$(tfout ip); DOMAIN=$(grep '^DOMAIN=' "$SECRETS" | cut -d= -f2)
   cat <<EOF
 
-Fatto.
-  • Nel DNS del dominio crea (o controlla) un record A:  $DOMAIN  →  $IP
-    Quando il DNS è aggiornato, il certificato HTTPS arriva da solo in un minuto: https://$DOMAIN
-  • Entrare nella VM:   ./deploy.sh ssh
-  • Aggiornare l'app:   ./deploy.sh update
+Fatto. Apri https://$DOMAIN
+(il certificato HTTPS arriva da solo: se la prima volta non si apre, riprova tra un minuto)
+
+  • Entra con $(grep '^ROOT_EMAIL=' "$SECRETS" | cut -d= -f2) e la password che hai scelto.
+  • La procedura guidata ti chiede il resto: email per gli inviti, il tuo dominio, dati del titolare, nome utente.
+    Per il dominio: nel DNS crea un record A  tuodominio  →  $IP, poi aggiungilo da Impostazioni → Server → Dominio.
+  • Aggiornare l'app:  ./deploy.sh update     Entrare nella VM:  ./deploy.sh ssh
   • Backup: ogni notte alle 03:30, cifrati, nel bucket $(tfout backup_bucket)
 EOF
+  [ -z "${ROOT_PW_SHOW:-}" ] || echo "  Password del root (generata): $ROOT_PW_SHOW   ← salvala nel gestore di password"
+  if [ -n "${BACKUP_PASS_SHOW:-}" ]; then
+    echo "  Passphrase dei backup: $BACKUP_PASS_SHOW"
+    echo "  ↑ salvala nel gestore di password: senza, i backup cifrati non si aprono (è anche in deploy/gcp/app.env)."
+  fi
 }
 
 # immagini Docker del repository da cui lanci lo script (questo progetto, un fork o la vecchia copia privata)
@@ -269,6 +276,11 @@ image_repo() {
   local u; u=$(git -C "$HERE" config --get remote.origin.url 2>/dev/null || true)
   u=${u%.git}; u=${u#*github.com[:/]}
   [[ "$u" =~ ^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$ ]] && echo "ghcr.io/${u,,}"
+}
+# il codice è lo stesso del progetto pubblico: se le immagini del tuo repository sono private, uso quelle pubbliche
+PUBLIC_IMAGE=ghcr.io/denzel18/tacuin
+use_public_image() {
+  remote "cd /opt/tracker && sudo sed -i 's|^TACUIN_IMAGE=.*|TACUIN_IMAGE=$PUBLIC_IMAGE|' .env && sudo grep -q '^TACUIN_IMAGE=' .env || echo 'TACUIN_IMAGE=$PUBLIC_IMAGE' | sudo tee -a .env >/dev/null"
 }
 set_image() {
   local img; img=$(image_repo) || return 0
@@ -350,7 +362,7 @@ cmd_reset() {
   local ok again
   read -rp "Per continuare scrivi CANCELLA TUTTO: " ok
   [ "$ok" = "CANCELLA TUTTO" ] || die "annullato: non ho toccato niente"
-  read -rp "Rifaccio anche la configurazione (nome e password del root, email…)? [s/N] " again
+  read -rp "Rifaccio anche la configurazione (email e password del root; email e dominio tornano da configurare nell'app)? [s/N] " again
 
   say "1/4 Tolgo la protezione dalla cancellazione della VM"
   terraform -chdir="$HERE" apply -input=false -auto-approve -var deletion_protection=false \
