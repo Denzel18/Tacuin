@@ -20,9 +20,9 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 DEPLOY=$(cd "$HERE/.." && pwd)
 SECRETS="$HERE/app.env"          # il .env dell'app: resta qui (chmod 600) e su GitHub non va mai
 LOG="$HERE/installazione.log"
-# Installazione «dedicata» (es. la copia privata usata per i test): deploy/gcp/istanza.conf fissa progetto, nome
-# e immagini. Senza quel file lo script è quello generico: progetto scelto o creato da solo, immagini pubbliche.
-ISTANZA_NOME="Tacuìn"; ISTANZA_PROGETTO=""; ISTANZA_IMMAGINI=""
+# Installazione «dedicata» (es. la copia privata usata per i test): deploy/gcp/istanza.conf ne fissa nome e immagini.
+# Senza quel file lo script è quello generico, con le immagini pubbliche. Il progetto Google è sempre quello aperto.
+ISTANZA_NOME="Tacuìn"; ISTANZA_IMMAGINI=""
 # shellcheck source=/dev/null
 [ ! -f "$HERE/istanza.conf" ] || . "$HERE/istanza.conf"
 exec 3>&1                        # fd 3 = lo schermo, anche quando l'output dei comandi va nel log
@@ -184,32 +184,28 @@ wait_ssh() {
 # ---------------------------------------------------------------- passi dell'installazione
 project_ok() { [ -n "$1" ] && [ "$(gcloud projects describe "$1" --format='value(lifecycleState)' 2>/dev/null || true)" = ACTIVE ]; }
 
+# Il progetto Google è quello aperto in Cloud Shell (in alto nella console). Se la cartella era configurata per
+# un altro progetto, o per uno cancellato, metto da parte la vecchia configurazione e seguo quello aperto.
+stash_config() {
+  local old; old="$HERE/vecchio-$(date +%Y%m%d-%H%M%S)"; mkdir -p "$old"
+  for f in terraform.tfvars terraform.tfstate terraform.tfstate.backup app.env .terraform; do [ ! -e "$HERE/$f" ] || mv "$HERE/$f" "$old/"; done
+  tell "  La configurazione precedente è in $old"
+}
 pick_project() {
-  local PID ALL
-  if [ -n "$ISTANZA_PROGETTO" ]; then   # progetto fissato da istanza.conf: niente scelte, niente progetti nuovi
-    project_ok "$ISTANZA_PROGETTO" || die "il progetto «$ISTANZA_PROGETTO» (deploy/gcp/istanza.conf) non esiste o il tuo account $(gcloud config get-value account 2>/dev/null) non lo vede: controlla di essere entrato con l'account giusto"
-    if [ -f "$HERE/terraform.tfvars" ] && [ "$(tfvar project_id)" != "$ISTANZA_PROGETTO" ]; then
-      local old; old="$HERE/vecchio-$(date +%Y%m%d-%H%M%S)"; mkdir -p "$old"
-      for f in terraform.tfvars terraform.tfstate terraform.tfstate.backup app.env .terraform; do [ ! -e "$HERE/$f" ] || mv "$HERE/$f" "$old/"; done
-      tell "  La configurazione per il progetto precedente è in $old"
-    fi
-    gcloud config set project "$ISTANZA_PROGETTO" >>"$LOG" 2>&1 || true
-    [ -f "$HERE/terraform.tfvars" ] || sed "s|^project_id = \"[^\"]*\"|project_id = \"$ISTANZA_PROGETTO\"|" "$HERE/terraform.tfvars.example" > "$HERE/terraform.tfvars"
-    tell "  Progetto Google Cloud: $ISTANZA_PROGETTO ($ISTANZA_NOME)"
-    return 0
-  fi
+  local PID ALL CUR
+  CUR=$(gcloud config get-value project 2>/dev/null || true)
+  project_ok "$CUR" || CUR=""   # Cloud Shell ricorda anche i progetti cancellati
   if [ -f "$HERE/terraform.tfvars" ]; then
     PID=$(tfvar project_id)
-    project_ok "$PID" && return 0
-    # il progetto di questa cartella è stato cancellato: metto da parte la vecchia configurazione e riparto
-    tell "  Il progetto «$PID» non esiste più (cancellato?): riparto da un progetto nuovo."
-    local old; old="$HERE/vecchio-$(date +%Y%m%d-%H%M%S)"; mkdir -p "$old"
-    mv "$HERE/terraform.tfvars" "$old/"
-    for f in terraform.tfstate terraform.tfstate.backup app.env .terraform; do [ ! -e "$HERE/$f" ] || mv "$HERE/$f" "$old/"; done
-    tell "  La configurazione vecchia è in $old"
+    if project_ok "$PID" && { [ -z "$CUR" ] || [ "$CUR" = "$PID" ]; }; then return 0; fi
+    if [ -n "$CUR" ] && project_ok "$PID"; then
+      tell "  In Cloud Shell è aperto il progetto «$CUR» (questa cartella usava «$PID»): installo su «$CUR»."
+    else
+      tell "  Il progetto «$PID» non esiste più (cancellato?): riparto da capo."
+    fi
+    stash_config
   fi
-  PID=$(gcloud config get-value project 2>/dev/null || true)
-  project_ok "$PID" || PID=""   # Cloud Shell ricorda anche i progetti cancellati
+  PID=$CUR
   if [ -z "$PID" ]; then
     ALL=$(gcloud projects list --filter='lifecycleState:ACTIVE' --format='value(projectId)' 2>/dev/null || true)
     case "$(grep -c . <<<"$ALL" || true)" in
