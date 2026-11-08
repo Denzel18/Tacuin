@@ -1959,7 +1959,7 @@ class Handler(BaseHTTPRequestHandler):
         self._json(200, {"users": users, "stats": iam.stats(), "sources": by_source,
                          "email": {"configured": mailer.configured, "error": mask_emails(mailer.last_error)}})
 
-    ADMIN_AUDIT = ("admin.", "user.register", "user.create", "login.fail", "user.self_delete", "settings.legal", "settings.contact")
+    ADMIN_AUDIT = ("admin.", "security.", "user.register", "user.create", "login.fail", "user.self_delete", "settings.legal", "settings.contact")
 
     def GET_api_admin_audit(self, url):
         """Registro per root/admin: solo eventi di gestione e sicurezza; niente IP o dettagli personali degli utenti."""
@@ -1969,7 +1969,7 @@ class Handler(BaseHTTPRequestHandler):
             a = r.get("action") or ""
             if not any(a == k or (k.endswith(".") and a.startswith(k)) for k in self.ADMIN_AUDIT):
                 continue
-            if not a.startswith("admin."):
+            if not a.startswith(("admin.", "security.")):  # l'IP di uno scanner bloccato non è un dato di un utente
                 r["ip"] = None
                 r["detail"] = mask_emails(r.get("detail"))
             items.append(r)
@@ -4314,7 +4314,14 @@ def security_alert(ban):
     detail = f"{ban['ip']} bloccato per {mins // 60} ore" if mins >= 60 else f"{ban['ip']} bloccato per {mins} minuti"
     detail += f": {ban['count']} {ban['why']}" + (f" (es. {', '.join(ban['examples'])})" if ban["examples"] else "")
     log.warning("Scudo: %s", detail)
-    iam.audit(None, "security.ban", None, detail[:300], ban["ip"])
+    # nel Registro attività va tutto: durata, quante volte nelle ultime 24 ore, ogni motivo e ogni richiesta sospetta
+    full = (f"Bloccato per {mins // 60} ore" if mins >= 60 else f"Bloccato per {mins} minuti") + \
+        (f" ({ban.get('repeat', 1)}° blocco nelle ultime 24 ore)" if ban.get("repeat", 1) > 1 else "")
+    kinds = ban.get("kinds") or {ban["why"]: ban["count"]}
+    full += ". Motivi: " + ", ".join(f"{n} {w}" for w, n in kinds.items()) + "."
+    if ban.get("all"):
+        full += " Richieste: " + " · ".join(f"{d} ({w})" if len({w for w, _ in ban["all"]}) > 1 else d for w, d in ban["all"])
+    iam.audit("system", "security.ban", None, full[:4000], ban["ip"])
     with _SEC["lock"]:
         _SEC["pending"].append(detail)
         due = time.time() - _SEC["last"] >= SEC_ALERT_EVERY

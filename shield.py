@@ -129,9 +129,15 @@ class Shield:
                     kinds[k] = kinds.get(k, 0) + 1
                 main = max(kinds, key=lambda k: kinds[k] * POINTS[k])
                 examples = [d for _, _, k, d in q if k == main and d][-3:]
+                seen, every = set(), []  # tutte le richieste sospette, senza doppioni, per il Registro attività
+                for _, _, k, d in q:
+                    if d and d not in seen:  # uno stesso percorso conta come scanner e come pagina inesistente: lo scrivo una volta
+                        seen.add(d)
+                        every.append((WHY[k], d))
                 self.banned[ip] = (t + dur, main)
                 self.points.pop(ip, None)
-                ban = {"ip": ip, "seconds": dur, "why": WHY[main], "count": kinds[main], "examples": examples, "repeat": len(h)}
+                ban = {"ip": ip, "seconds": dur, "why": WHY[main], "count": kinds[main], "examples": examples, "repeat": len(h),
+                       "kinds": {WHY[k]: n for k, n in kinds.items()}, "all": every[-40:]}
         if ban and self.on_ban:
             try:
                 self.on_ban(ban)

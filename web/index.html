@@ -5360,9 +5360,9 @@ async function renderAudit() {
   m.innerHTML = `<div class="head">${hIcon('list')}<h1 class="title">Registro attività</h1></div>
     <div class="boxed"><table class="utable cardt"><thead><tr><th>Quando</th><th>Chi</th><th>Cosa</th><th>Su chi</th><th>Dettagli</th><th>IP</th></tr></thead>
     <tbody>${j.items.map(i => `<tr><td data-l="Quando">${esc(fmtWhen(i.ts))}</td><td data-l="Chi">${esc(i.actor_name || (i.actor_id === 'system' ? 'Sistema' : '—'))}</td>
-      <td class="w ${i.action === 'login.fail' ? 'neg' : ''}" style="order:-1"><b style="font-weight:500">${esc(AUDIT_LABEL[i.action] || i.action)}</b></td><td data-l="Su chi">${esc(i.target_name || '—')}</td>
-      <td class="muted w2 ${i.detail ? '' : 'emp'}">${esc(i.detail || '')}</td><td class="muted" data-l="IP">${esc(i.ip || '')}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">Nessuna attività.</td></tr>'}</tbody></table></div>
-    <p class="hint">Ultime 300 operazioni su accessi e account. Le voci più vecchie di 12 mesi vengono cancellate da sole.</p>`;
+      <td class="w ${i.action === 'login.fail' || i.action === 'security.ban' ? 'neg' : ''}" style="order:-1"><b style="font-weight:500">${esc(AUDIT_LABEL[i.action] || i.action)}</b></td><td data-l="Su chi">${esc(i.target_name || '—')}</td>
+      <td class="muted w2 ${i.detail ? '' : 'emp'}" style="overflow-wrap:anywhere">${esc(i.detail || '')}</td><td class="muted" data-l="IP">${esc(i.ip || '')}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">Nessuna attività.</td></tr>'}</tbody></table></div>
+    <p class="hint">Ultime 300 operazioni su accessi, account e sicurezza (indirizzi bloccati dallo scudo, con tutte le richieste sospette). Le voci più vecchie di 12 mesi vengono cancellate da sole.</p>`;
 }
 $('#meChip').onclick = () => { state.view = 'profile'; closeNav(); render(); };
 $('#syncErr').addEventListener('click', e => { if (e.target.closest('#syncRetry')) { setSaved('Sincronizzazione…'); writeNow(); } });
