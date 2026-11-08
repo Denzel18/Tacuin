@@ -20,6 +20,11 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 DEPLOY=$(cd "$HERE/.." && pwd)
 SECRETS="$HERE/app.env"          # il .env dell'app: resta qui (chmod 600) e su GitHub non va mai
 LOG="$HERE/installazione.log"
+# Installazione «dedicata» (es. la copia privata usata per i test): deploy/gcp/istanza.conf fissa progetto, nome
+# e immagini. Senza quel file lo script è quello generico: progetto scelto o creato da solo, immagini pubbliche.
+ISTANZA_NOME="Tacuìn"; ISTANZA_PROGETTO=""; ISTANZA_IMMAGINI=""
+# shellcheck source=/dev/null
+[ ! -f "$HERE/istanza.conf" ] || . "$HERE/istanza.conf"
 exec 3>&1                        # fd 3 = lo schermo, anche quando l'output dei comandi va nel log
 # gcloud non deve mai fermarsi ad aspettare una risposta: con l'output nel log la domanda non si vedrebbe
 # e lo script sembrerebbe bloccato. Le uniche domande sono quelle di questo script (e il login, se serve).
@@ -181,6 +186,18 @@ project_ok() { [ -n "$1" ] && [ "$(gcloud projects describe "$1" --format='value
 
 pick_project() {
   local PID ALL
+  if [ -n "$ISTANZA_PROGETTO" ]; then   # progetto fissato da istanza.conf: niente scelte, niente progetti nuovi
+    project_ok "$ISTANZA_PROGETTO" || die "il progetto «$ISTANZA_PROGETTO» (deploy/gcp/istanza.conf) non esiste o il tuo account $(gcloud config get-value account 2>/dev/null) non lo vede: controlla di essere entrato con l'account giusto"
+    if [ -f "$HERE/terraform.tfvars" ] && [ "$(tfvar project_id)" != "$ISTANZA_PROGETTO" ]; then
+      local old; old="$HERE/vecchio-$(date +%Y%m%d-%H%M%S)"; mkdir -p "$old"
+      for f in terraform.tfvars terraform.tfstate terraform.tfstate.backup app.env .terraform; do [ ! -e "$HERE/$f" ] || mv "$HERE/$f" "$old/"; done
+      tell "  La configurazione per il progetto precedente è in $old"
+    fi
+    gcloud config set project "$ISTANZA_PROGETTO" >>"$LOG" 2>&1 || true
+    [ -f "$HERE/terraform.tfvars" ] || sed "s|^project_id = \"[^\"]*\"|project_id = \"$ISTANZA_PROGETTO\"|" "$HERE/terraform.tfvars.example" > "$HERE/terraform.tfvars"
+    tell "  Progetto Google Cloud: $ISTANZA_PROGETTO ($ISTANZA_NOME)"
+    return 0
+  fi
   if [ -f "$HERE/terraform.tfvars" ]; then
     PID=$(tfvar project_id)
     project_ok "$PID" && return 0
@@ -238,8 +255,17 @@ ensure_billing() {
     ask ACC "Quale collego al progetto $PID? (scrivi l'ID, la prima colonna)"
   fi
   tell "  Collego la fatturazione $ACC al progetto $PID."
-  gcloud billing projects link "$PID" --billing-account="$ACC" >>"$LOG" 2>&1 \
-    || die "non sono riuscito a collegare la fatturazione: il motivo è nel log"
+  # un progetto appena creato a volte non è ancora «visibile» alla fatturazione: riprovo per un paio di minuti
+  local try
+  for try in 1 2 3 4 5 6; do
+    gcloud billing projects link "$PID" --billing-account="$ACC" >>"$LOG" 2>&1 && return 0
+    [ "$try" = 6 ] || { tell "  Il progetto non è ancora pronto per la fatturazione, riprovo tra 20 secondi ($try/5)…"; sleep 20; }
+  done
+  tell ""
+  tell "  Google non mi lascia collegare la fatturazione al progetto $PID con l'account $(gcloud config get-value account 2>/dev/null)."
+  tell "  Di solito vuol dire che il progetto è stato creato con un altro account Google, oppure che è stato cancellato."
+  tell "  Puoi collegarla a mano: https://console.cloud.google.com/billing/linkedaccount?project=$PID"
+  die "fatturazione non collegata: rilancia lo script dopo averla collegata"
 }
 
 ask_root() {  # le sole domande della prima installazione
@@ -384,7 +410,7 @@ images() {
   set_image
   if remote "cd /opt/tracker && sudo docker compose pull -q tracker"; then
     echo "immagini scaricate"
-  elif use_public_image && remote "cd /opt/tracker && sudo docker compose pull -q tracker"; then
+  elif [ "$ISTANZA_IMMAGINI" != proprie ] && use_public_image && remote "cd /opt/tracker && sudo docker compose pull -q tracker"; then
     echo "immagini pubbliche del progetto ($PUBLIC_IMAGE)"
   elif remote "sudo test -f /root/.docker/config.json && sudo grep -q ghcr.io /root/.docker/config.json"; then
     echo "accesso a GitHub già configurato"
@@ -426,7 +452,7 @@ cmd_up() {
   ensure_billing
   [ -f "$SECRETS" ] && grep -q '^DOMAIN=..*' "$SECRETS" || ask_root
 
-  bar_begin "Installo Tacuìn su Google Cloud" 10
+  bar_begin "Installo $ISTANZA_NOME su Google Cloud" 10
   step "Preparo gli strumenti" ensure_terraform
   export PATH="$HOME/.local/bin:$PATH"
   step "Attivo i servizi Google" enable_apis
@@ -490,7 +516,7 @@ cmd_update() {
     KEEP_LOG=1 cmd_up; return
   fi
   local IP=""
-  bar_begin "Aggiorno Tacuìn" 2
+  bar_begin "Aggiorno $ISTANZA_NOME" 2
   step "Copio i file aggiornati" update_files
   step "Backup, nuova versione e riavvio" update_run
   bar_end
