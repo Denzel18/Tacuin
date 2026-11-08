@@ -25,3 +25,6 @@ deploy/gcp/*.tfstate
 deploy/gcp/*.tfstate.*
 deploy/gcp/terraform.tfvars
 deploy/gcp/app.env
+deploy/gcp/app.env.vecchio
+deploy/gcp/installazione.log
+deploy/gcp/.tfplan
